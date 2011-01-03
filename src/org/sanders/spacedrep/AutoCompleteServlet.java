@@ -72,7 +72,10 @@ public class AutoCompleteServlet extends HttpServlet {
 
             long start = System.currentTimeMillis();
             int resultCount = countString==null ? Integer.MAX_VALUE :  Integer.parseInt(countString);
-            List<NVP> sub = Database.listDecks(name.replace("*", "") ,  resultCount);
+            name = name.replace("*", "");
+            name = name.replaceAll("_","\\\\_");
+            
+            List<NVP> sub = Database.listDecks(name ,  resultCount);
             
             p("subset time: "+(System.currentTimeMillis() - start));
             

@@ -83,7 +83,7 @@ public class Database {
 		
 		try{
 			conn = cp.getConnection();
-			ps = conn.prepareStatement("select id, name from deck where name like ? ");
+			ps = conn.prepareStatement("select id, name from deck where name like ? escape '\' order by name ");
 			ps.setString(1, prefix+"%");
 			ps.setMaxRows(limit);
 			final ResultSet rs =  ps.executeQuery();

@@ -19,7 +19,18 @@ dojo.addOnLoad(function(){
 
 <script>
 function createDeck(){
-	alert('create')
+	dojo.xhrPost({
+		form:"create-deck-form",
+		
+		error: function(err){
+			dojo.byId("status-div").innerHTML=dojo.toJson(err)
+		},
+		load: function(data){
+			dojo.byId("status-div").innerHTML=dojo.fromJson(data).status		
+		}
+		
+	});
+	dojo.byId("status-div").innerHTML="Creating deck ..."
 }
 </script>
    
@@ -34,9 +45,17 @@ function createDeck(){
 	name="state1" autoComplete="true" invalidMessage="Invalid state name"
 	store=thestore pageSize=20 ></select>
 <input type="button" value="Open" />
-<br/>Create deck:
-<input type="text" width="60px" id="deck-txt" />
+
+
+<form id="create-deck-form" action="CreateDeck" >
+Create deck:
+<input type="text" width="60px" name="deck-name" />
 <input type="button" value="Create" onclick="createDeck()"/>	
+</form>
+
+
+
+<div id="status-div"></div>
 
 </body>
 </html>
