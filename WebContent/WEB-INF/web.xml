@@ -13,6 +13,18 @@
 		<servlet-name>CreateDeck</servlet-name>
 		<url-pattern>/CreateDeck</url-pattern>
 	</servlet-mapping>
+	<servlet>
+		<description>
+		</description>
+		<display-name>AutoCompleteServlet</display-name>
+		<servlet-name>AutoCompleteServlet</servlet-name>
+		<servlet-class>
+		org.sanders.spacedrep.AutoCompleteServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AutoCompleteServlet</servlet-name>
+		<url-pattern>/AutoCompleteServlet</url-pattern>
+	</servlet-mapping>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 		<welcome-file>index.htm</welcome-file>

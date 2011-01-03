@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 
@@ -67,6 +69,39 @@ public class Database {
 		public String foreignWritten;
 		public String pronunciation;
 		public String translation;
+	}
+	public static class NVP{
+		int id;
+		String name;
+		public NVP(int id, String name){
+			this.id = id;
+			this.name = name;
+		}
+	}
+	public static List<NVP> listDecks(String prefix, int limit) {
+		List<NVP> decks = new ArrayList<NVP>();
+		Connection conn = null;
+		PreparedStatement ps = null;
+		
+		try{
+			conn = cp.getConnection();
+			ps = conn.prepareStatement("select id, name from deck where name like ? ");
+			ps.setString(1, prefix+"%");
+			ps.setMaxRows(limit);
+			final ResultSet rs =  ps.executeQuery();
+			for(int c = 0 ; rs.next() && c < limit ; c++){
+				decks.add(new NVP(rs.getInt(1),rs.getString(2)));
+			}
+			rs.close();
+			return decks;
+		}catch(Exception e){
+			throw new RuntimeException(e);
+		}finally{
+			try{
+				ps.close();
+				conn.close();
+			}catch(Exception e){}
+		}
 	}
 	
 	public synchronized static void createCard(CreateCardsParams ccp){
