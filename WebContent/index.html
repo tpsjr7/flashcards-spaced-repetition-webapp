@@ -15,16 +15,28 @@ dojo.require("dojox.data.QueryReadStore");
 dojo.addOnLoad(function(){
 	console.log("hello");
 });
-</script>        
-</head>
+</script>     
 
+<script>
+function createDeck(){
+	alert('create')
+}
+</script>
+   
+</head>
 <body class="tundra">
-<div dojoType="dojox.data.QueryReadStore" jsId="thestore"
-	url="AutoCompleteServlet" requestMethod="post"></div>
+<span dojoType="dojox.data.QueryReadStore" jsId="thestore"
+	url="AutoCompleteServlet" requestMethod="post"></span>
+<span>Decks:</span>
+
+
 <select dojoType="dijit.form.FilteringSelect" id="setvaluetest2"
 	name="state1" autoComplete="true" invalidMessage="Invalid state name"
-	store=thestore pageSize=20 />
+	store=thestore pageSize=20 ></select>
+<input type="button" value="Open" />
+<br/>Create deck:
+<input type="text" width="60px" id="deck-txt" />
+<input type="button" value="Create" onclick="createDeck()"/>	
 
-</select>
 </body>
 </html>
