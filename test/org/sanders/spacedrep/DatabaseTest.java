@@ -1,15 +1,13 @@
 package org.sanders.spacedrep;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import org.h2.jdbcx.JdbcConnectionPool;
 import org.junit.Test;
 
 public class DatabaseTest {
 
 	@Test public void test() throws SQLException{
+		/*
 		JdbcConnectionPool cp = JdbcConnectionPool.create("jdbc:h2:testdb", "sa", "sa");
 		Connection conn = cp.getConnection();
 		Statement st = conn.createStatement();
@@ -18,6 +16,11 @@ public class DatabaseTest {
 		st.execute("create table card_to_deck ( card_id int not null, deck_id int not null, foreign key(card_id) references card(id), foreign key(deck_id) references deck(id) )");
 		
 		conn.close();
-		cp.dispose();
+		cp.dispose();*/
 	}
+	
+	@Test public void testDatabase(){
+		System.out.println("deck id: " + Database.createDeck("__adtestdeck__"));
+	}
+	
 }
