@@ -28,23 +28,23 @@ Scheduler.prototype.addWord = function(front, back){
     })
 }
 
-Scheduler.prototype.sortByDueDate = function(a,b){
+Scheduler.prototype._sortByDueDate = function(a,b){
     return a.timeDue - b.timeDue
 }
 
 
-Scheduler.prototype.getEarliestCardDue = function(){
+Scheduler.prototype._getEarliestCardDue = function(){
     if(this.activeCards.length > 0){
-        return this.activeCards.sort(this.sortByDueDate)[0]
+        return this.activeCards.sort(this._sortByDueDate)[0]
     }else{
         throw new Error("cannot call getEarliestCardDue with no active cards")
     }
     
 }
 
-Scheduler.prototype.pickOverDueCard = function(){
+Scheduler.prototype._pickOverDueCard = function(){
     var acs = this.activeCards
-    acs = acs.sort(this.sortByDueDate)
+    acs = acs.sort(this._sortByDueDate)
     //alert('make sure its sorting in the right order')
     this.activeCards = acs
     
@@ -72,7 +72,7 @@ Scheduler.prototype.pickOverDueCard = function(){
 
 Scheduler.prototype.nextCardOrPause = function(){
 
-        var cardIndex = this.pickOverDueCard()
+        var cardIndex = this._pickOverDueCard()
         
         var now = new Date().getTime()
         
@@ -86,7 +86,7 @@ Scheduler.prototype.nextCardOrPause = function(){
                 this.activeCards.push(card)
                 this.cardTesting = card
             }else{
-                this.cardTesting = this.getEarliestCardDue() //no more card so just wait
+                this.cardTesting = this._getEarliestCardDue() //no more card so just wait
             }
         }else{//picked the card that was most overdue for the size of its interval
             this.cardTesting = this.activeCards[cardIndex]
@@ -108,7 +108,7 @@ Scheduler.prototype.nextCardOrPause = function(){
 }
 
 
-Scheduler.prototype.rescheduleCurrentCard = function(bCorrect,timeShown){
+Scheduler.prototype._rescheduleCurrentCard = function(bCorrect,timeShown){
     if(this.cardTesting==null) throw new Error("cardTesting cannot be null")
     
     var now = new Date().getTime()
@@ -128,11 +128,11 @@ Scheduler.prototype.rescheduleCurrentCard = function(bCorrect,timeShown){
     this.cardTesting.lastTimeTested = now
 }
 Scheduler.prototype.forgotCard = function(timeShown){
-    this.rescheduleCurrentCard(false,timeShown)
+    this._rescheduleCurrentCard(false,timeShown)
     this.nextCardOrPause()
 }
 Scheduler.prototype.rememberedCard = function( timeShown){
 
-    this.rescheduleCurrentCard(true,timeShown)
+    this._rescheduleCurrentCard(true,timeShown)
     this.nextCardOrPause()
 }
