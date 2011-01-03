@@ -25,17 +25,15 @@ public class Database {
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					System.out.println("run shutdown hooks");
-					cp.dispose();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-		}));
+
+	}
+	
+	public static void destroy(){
+		try {
+			cp.dispose();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public synchronized static int createDeck(String name){

@@ -38,7 +38,10 @@ public class AutoCompleteServlet extends HttpServlet {
         l.info(mess);
     }
 
-
+    @Override
+    public void destroy(){
+    	Database.destroy();
+    }
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
