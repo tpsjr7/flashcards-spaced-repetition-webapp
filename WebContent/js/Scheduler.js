@@ -19,6 +19,7 @@ Scheduler = function(){
 } //constructor
 
 Scheduler.prototype.addWord = function(front, back){
+	
     this.inactiveCards.push({
         front:front,
         back:back, 
@@ -78,8 +79,6 @@ Scheduler.prototype.nextCardOrPause = function(){
         
         if(cardIndex==-1){//no overdue cards, 
             //if there are any more inactive cards, pick one to become active
-
-
             if(this.inactiveCards.length > 0){
                 var card = this.inactiveCards.pop()
                 card.timeDue = now 

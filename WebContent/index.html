@@ -1,11 +1,11 @@
 <html>
 <head>
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.4.0/dojo/dojo.xd.js" djConfig="parseOnLoad: true" ></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.4.0/dijit/dijit.xd.js"></script>
+<script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true" ></script>
+<script type="text/javascript" src="js/dojo-release-1.5.0/dijit/dijit.js"></script>
 <style type="text/css">
-@import "http://ajax.googleapis.com/ajax/libs/dojo/1.4.0/dijit/themes/tundra/tundra.css";
-@import "http://ajax.googleapis.com/ajax/libs/dojo/1.4.0/dojo/resources/dojo.css"
+@import "js/dojo-release-1.5.0/dijit/themes/tundra/tundra.css";
+@import "js/dojo-release-1.5.0/dojo/resources/dojo.css"
 </style>
 
 <script type="text/javascript">
@@ -20,8 +20,8 @@ dojo.addOnLoad(function(){
 <script>
 function createDeck(){
 	dojo.xhrPost({
-		form:"create-deck-form",
-		
+		url:"CreateDeck",
+		content:{"deck-name":dojo.byId('deck-name').value},	
 		error: function(err){
 			dojo.byId("status-div").innerHTML=dojo.toJson(err)
 		},
@@ -32,29 +32,35 @@ function createDeck(){
 	});
 	dojo.byId("status-div").innerHTML="Creating deck ..."
 }
+
 function openDeck(){
-	
+	document.location="backendstudy.jsp?deck_id="+thestore.getValue(deckSelect.item,'id')
+	//alert("value of select is: "+deckSelect.get('value'))
+	//alert("howdy2")	
+	//
 }
+
 </script>
    
 </head>
 <body class="tundra">
 <span dojoType="dojox.data.QueryReadStore" jsId="thestore"
 	url="AutoCompleteServlet" requestMethod="post"></span>
+	
 <span>Decks:</span>
 
-
-<select dojoType="dijit.form.FilteringSelect" id="setvaluetest2"
+<select dojoType="dijit.form.FilteringSelect" jsId="deckSelect"
 	name="state1" autoComplete="true" invalidMessage="Invalid deck name"
 	store=thestore pageSize=20 ></select>
-<input type="button" value="Open" />
+	
+<input type="button" value="Open" onclick="openDeck()"/>
 
 
-<form id="create-deck-form" action="CreateDeck" >
+<div>
 Create deck:
-<input type="text" width="60px" name="deck-name" />
+<input type="text" width="60px" id="deck-name" />
 <input type="button" value="Create" onclick="createDeck()"/>	
-</form>
+</div>
 
 
 

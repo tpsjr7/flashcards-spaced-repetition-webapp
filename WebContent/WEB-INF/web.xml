@@ -21,9 +21,21 @@
 		<servlet-class>
 		org.sanders.spacedrep.AutoCompleteServlet</servlet-class>
 	</servlet>
+	<servlet>
+		<description>
+		</description>
+		<display-name>CardDealerServlet</display-name>
+		<servlet-name>CardDealerServlet</servlet-name>
+		<servlet-class>
+		org.sanders.spacedrep.CardDealerServlet</servlet-class>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>AutoCompleteServlet</servlet-name>
 		<url-pattern>/AutoCompleteServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>CardDealerServlet</servlet-name>
+		<url-pattern>/CardDealerServlet</url-pattern>
 	</servlet-mapping>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>

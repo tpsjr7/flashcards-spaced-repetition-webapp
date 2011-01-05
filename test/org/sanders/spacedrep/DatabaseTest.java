@@ -19,7 +19,7 @@ public class DatabaseTest {
 		cp.dispose();*/
 	}
 	
-	@Test public void testDatabase(){
+	@Test public void testDatabase() throws SQLException{
 		System.out.println("deck id: " + Database.createDeck("__adtestdeck__"));
 	}
 	

@@ -6,6 +6,7 @@ package org.sanders.spacedrep;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -41,6 +42,11 @@ public class AutoCompleteServlet extends HttpServlet {
     @Override
     public void destroy(){
     	Database.destroy();
+    }
+    
+    @Override
+    public void init(){
+    	Database.init();
     }
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -82,7 +88,9 @@ public class AutoCompleteServlet extends HttpServlet {
             int startIndex = Integer.parseInt(startString);
             outputJSON(out,skipElements(startIndex, sub),resultCount);
 
-        } finally {
+        } catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
             out.close();
         }
     }
