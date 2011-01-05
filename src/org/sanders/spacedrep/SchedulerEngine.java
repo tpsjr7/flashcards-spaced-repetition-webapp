@@ -8,7 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sanders.spacedrep.Database.Card;
-import org.sanders.spacedrep.Database.CardDueTime;
 import org.sanders.spacedrep.Database.CreateCardsParams;
 import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 
@@ -45,7 +44,6 @@ public class SchedulerEngine {
 
 	public Card nextCardOrPause(int deck_id) throws SQLException{
 		int most_overdue = Database.findMostOverdueCard(deck_id);
-		CardDueTime cdt;
 		long now = new Date().getTime();
 		int cardTesting = -1;
 		if(most_overdue==-1){
@@ -57,8 +55,7 @@ public class SchedulerEngine {
 				Database.activateCard(deck_id, activateCard, now);
 				cardTesting = activateCard;
 			}else{//all cards are already activated
-				cdt = Database.getEarliestCardDue(deck_id);
-				cardTesting = cdt.card_id;
+				cardTesting = Database.getEarliestCardDue(deck_id);
 			}
 		}else{
 			Database.updateTimeDue(deck_id, most_overdue, now);

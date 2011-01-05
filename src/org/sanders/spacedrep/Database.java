@@ -193,7 +193,7 @@ public class Database {
 	
 	public static int selectCardToActivate(int deck_id) throws SQLException{
 		Connection conn = cp.getConnection();
-		String sql = "select id from card where active=0 and and deck_id = ?";
+		String sql = "select id from card where active=0 and deck_id = ?";
 		try{
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setMaxRows(1);
@@ -235,32 +235,28 @@ public class Database {
 		}
 	}
 	
-	public static class CardDueTime{
-		public int card_id;
-		public long timedue;
-	}
-	public static CardDueTime getEarliestCardDue(int deck_id) throws SQLException{
+	public static int getEarliestCardDue(int deck_id) throws SQLException{
 		Connection conn = cp.getConnection();
-		String sql = "select id,timedue from card where active=1 and timedue=min(timedue) and deck_id = ?";
+		String sql = "select t1.id from ( select id, timedue from card where deck_id=? and active=1 ) as t1 " +
+				"left outer join ( select id, timedue from card where deck_id=? and active=1 ) as t2 " +
+				"on t1.TIMEDUE > t2.TIMEDUE " +
+				"where  t2.id is NULL";
+		
 		try{
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setMaxRows(1);
 			ps.setInt(1, deck_id);
+			ps.setInt(2, deck_id);
 			
 			ResultSet rs = ps.executeQuery();
 			int id;  
-			long time;
 			if(rs.first()){
 				id = rs.getInt(1);
-				time = rs.getLong(2);
 			}else{
 				throw new RuntimeException("could not find a card due.");
 			}
 			ps.close();
-			CardDueTime cdt = new CardDueTime();
-			cdt.card_id = id;
-			cdt.timedue = time;
-			return cdt;
+			return id;
 		}finally{
 			conn.close();
 		}
@@ -321,7 +317,7 @@ public class Database {
 			ps.setLong(6,card.timeDue);
 			ps.setLong(7, card.lastTimeTested);
 			ps.setByte(8, card.active);
-			ps.setInt(8, card.id);
+			ps.setInt(9, card.id);
 
 			ps.execute();
 			ps.close();

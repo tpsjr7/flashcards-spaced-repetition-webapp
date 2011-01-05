@@ -31,6 +31,18 @@ var deckId= <%= request.getParameter("deck_id") %>;
 var currentCard = null
 var card_id = null
 
+dojo.addOnLoad(function(){
+	loadDeckConfig(function(){
+		dojo.byId("current-word-front").style.fontSize=deckConfig.fontsize;
+		dojo.byId('current-word-front').value = ""
+		setInterval(function(){
+			dojo.byId("time-now").innerHTML=new Date().toString("h:mm:ss")
+		},1000)
+		onCheckboxChange()
+		nextCardOrPause()
+	});
+})
+
 function showNewCardButton(card){
     var b = dojo.byId('show-card-button')
     b.style.display="block"
@@ -55,14 +67,7 @@ function onCheckboxChange(){
     }
 }
 
-dojo.addOnLoad(function(){
-	loadDeckConfig(function(){
-		dojo.byId("current-word-front").style.fontSize=deckConfig.fontsize;
-		dojo.byId('current-word-front').value = ""
-		onCheckboxChange()
-		nextCardOrPause()
-	});
-})
+
 
 function loadDeckConfig(callback){
 	dojo.xhrGet({
