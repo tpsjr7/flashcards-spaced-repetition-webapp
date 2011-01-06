@@ -40,7 +40,7 @@ dojo.addOnLoad(function(){
 			dojo.byId("time-now").innerHTML=new Date().toString("h:mm:ss")
 		},1000)
 		onCheckboxChange()
-		nextCardOrPause(showDueTime);
+		nextCardOrPause();
 	});
 })
 
@@ -112,7 +112,7 @@ function showAnswer(){
     dojo.byId('answer-span').innerHTML=currentCard.back
 }
 
-function nextCardOrPause(callback){
+function nextCardOrPause(){
 	dojo.xhrGet({
 		url:"CardDealerServlet",
 		content:{op:"nextCardOrPause",deck_id:deckId},
@@ -124,19 +124,19 @@ function nextCardOrPause(callback){
 			var now = new Date().getTime()
 			var wait = jo.timeDue - now;
 			card_id = jo.card_id
+			
 			if(wait > 0){
 				nextCardDueDate = new Date(jo.timeDue)
+				setupForNextCard()
 				setTimeout(function(){
 	        		cardIsScheduledCallback(jo.cardToShow)
 	    		},wait )
 			}else{
 				nextCardDueDate = new Date(now)
+				setupForNextCard()
 				cardIsScheduledCallback(jo.cardToShow)
 			}
 			
-    		if(callback!=null){
-    			callback();
-    		}
 		}
 	});
 }
@@ -174,8 +174,8 @@ function nextCardOrPause(callback){
 			var cards = tripletParse(lines)
 			addCards(cards,
 				function(data){
-					dojo.byId("input-words").value = ""
-					nextCardOrPause()
+					dojo.byId("input-words").value = "";
+					nextCardOrPause();
 				},
 				function(err){
 					alert('failed to add cards '+dojo.toJson(c));
@@ -206,7 +206,7 @@ function nextCardOrPause(callback){
 				card_id:card_id
 			},
 			load:function(data){
-				nextCardOrPause(setupForNextCard);
+				nextCardOrPause();
 				
 			},
 			error:function(err){
