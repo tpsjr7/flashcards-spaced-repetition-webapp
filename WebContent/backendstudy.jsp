@@ -3,7 +3,6 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <script type="text/javascript" src="js/datelib.js"></script>
   <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js"></script>
-  <script type="text/javascript" src="js/base64.js"></script>
 <script type="text/javascript">
 /*
 {
@@ -41,10 +40,13 @@ dojo.addOnLoad(function(){
 			dojo.byId("time-now").innerHTML=new Date().toString("h:mm:ss")
 		},1000)
 		onCheckboxChange()
-		nextCardOrPause()
+		nextCardOrPause(showDueTime);
 	});
 })
 
+function showDueTime(){
+	dojo.byId('card-due').innerHTML = nextCardDueDate.toString("h:mm:ss")
+}
 function showNewCardButton(card){
     var b = dojo.byId('show-card-button')
     b.style.display="block"
@@ -68,8 +70,6 @@ function onCheckboxChange(){
         cardIsScheduledCallback  = showNewCard
     }
 }
-
-
 
 function loadDeckConfig(callback){
 	dojo.xhrGet({
@@ -104,7 +104,7 @@ function setupForNextCard(){
     dojo.byId('answer-div').style.display="none"
     dojo.byId('current-word-front').value = ""
     dojo.byId('current-card').style.display="none"
-    dojo.byId('card-due').innerHTML = nextCardDueDate.toString("h:mm:ss")
+    showDueTime();
 }
 
 function showAnswer(){
@@ -112,7 +112,7 @@ function showAnswer(){
     dojo.byId('answer-span').innerHTML=currentCard.back
 }
 
-function nextCardOrPause(){
+function nextCardOrPause(callback){
 	dojo.xhrGet({
 		url:"CardDealerServlet",
 		content:{op:"nextCardOrPause",deck_id:deckId},
@@ -133,7 +133,10 @@ function nextCardOrPause(){
 				nextCardDueDate = new Date(now)
 				cardIsScheduledCallback(jo.cardToShow)
 			}
-
+			
+    		if(callback!=null){
+    			callback();
+    		}
 		}
 	});
 }
@@ -203,8 +206,8 @@ function nextCardOrPause(){
 				card_id:card_id
 			},
 			load:function(data){
-				nextCardOrPause();
-				setupForNextCard()
+				nextCardOrPause(setupForNextCard);
+				
 			},
 			error:function(err){
 				alert('unable to reschedule: '+dojo.toJson(err))
