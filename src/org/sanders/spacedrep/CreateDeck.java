@@ -40,6 +40,7 @@ public class CreateDeck extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		PrintWriter pw = null ;
+		request.setCharacterEncoding("UTF-8");
 		try{
 			pw = response.getWriter();
 			String name = request.getParameter("deck-name");

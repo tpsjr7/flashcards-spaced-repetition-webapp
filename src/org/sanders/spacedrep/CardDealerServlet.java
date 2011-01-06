@@ -40,17 +40,22 @@ public class CardDealerServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	request.setCharacterEncoding("utf-8");
+    	response.setContentType("text/html;charset=UTF-8");
 		String op = request.getParameter("op");
 		PrintWriter pw = response.getWriter();
 		try {
 			String params = request.getParameter("params");
+			System.out.println("params: "+params);
 			JSONObject jo = null;
 			if(params!=null){
 				jo = new JSONObject(params);
 			}
 			
 			if(op.equals("addCards")){
+				System.out.println("Addcard jo: "+jo.toString());
 				se.addCards(jo);
 				return;
 			}else if(op.equals("nextCardOrPause")){

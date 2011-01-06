@@ -1,5 +1,6 @@
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <script type="text/javascript" src="js/datelib.js"></script>
   <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js"></script>
 <script type="text/javascript">
@@ -88,7 +89,7 @@ function addCards(/* json array */ cards, callback,errorcallback){
 		deckId:deckId,
 		cards:cards
 	}
-	dojo.xhrGet({
+	dojo.xhrPost({
 		url:"CardDealerServlet",
 		content:{op:"addCards", params: dojo.toJson(params)},
 		load:callback,
