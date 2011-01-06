@@ -3,6 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <script type="text/javascript" src="js/datelib.js"></script>
   <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js"></script>
+  <script type="text/javascript" src="js/base64.js"></script>
 <script type="text/javascript">
 /*
 {
@@ -167,18 +168,16 @@ function nextCardOrPause(){
 			}
 			var lines = input.split('\n')
 			console.log("lines.length: " + lines.length)
-
-			
-				var cards = tripletParse(lines)
-				addCards(cards,
-					function(data){
-						dojo.byId("input-words").value = ""
-						nextCardOrPause()
-					},
-					function(err){
-						alert('failed to add cards '+dojo.toJson(c));
-					}
-				);
+			var cards = tripletParse(lines)
+			addCards(cards,
+				function(data){
+					dojo.byId("input-words").value = ""
+					nextCardOrPause()
+				},
+				function(err){
+					alert('failed to add cards '+dojo.toJson(c));
+				}
+			);
 			
 		} catch (e) {
 			alert(e)

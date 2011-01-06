@@ -35,6 +35,7 @@ public class CardDealerServlet extends HttpServlet {
     
     @Override
     public void init(){
+    	System.out.println("嗓子疼 sǎngzi téng");
     	Database.init();
     }
 	/**

@@ -332,6 +332,7 @@ public class Database {
 			PreparedStatement ps = null;
 			try{
 				conn = cp.getConnection();
+				conn.setAutoCommit(false);
 				 ps = conn.prepareStatement("insert into card( deck_id, " +
 						"foreign_written, pronunciation, translation , interval, timedue, " +
 						"lastTimeTested, active) values ( ?,?,?,?,?,?,?,?)");
@@ -349,10 +350,17 @@ public class Database {
 					ps.addBatch();
 				}
 	
-				ps.execute();
+				int [] rowcounts = ps.executeBatch();
+				if(rowcounts.length!=ccp.cards.size()){
+					conn.rollback();
+					throw new RuntimeException("Did not insert the same number of cards as given.");
+				}
+				conn.commit();
 				ps.close();
 				return;
 			}finally{
+				
+				try{conn.setAutoCommit(true);}catch(Exception e){};
 				conn.close();
 			}
 	}
