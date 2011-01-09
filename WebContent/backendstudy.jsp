@@ -160,7 +160,11 @@ function nextCardOrPause(){
 	            translation: eng
 	        })
 	    }
-	    return cards
+	    var revcards = []
+		while(cards.length > 0){
+			revcards.push(cards.pop())
+		}
+	    return revcards
 	}
 
 	function parseInputWords() {
