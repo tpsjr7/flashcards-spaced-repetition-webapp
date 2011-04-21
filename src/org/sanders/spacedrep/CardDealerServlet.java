@@ -3,6 +3,7 @@ package org.sanders.spacedrep;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -68,12 +69,13 @@ public class CardDealerServlet extends HttpServlet {
 				out.put("cardToShow", cardToShow);
 				out.put("timeDue", c.timeDue);
 				out.put("card_id", c.id);
+				out.put("serverTime", new Date().getTime());
 				pw.print(out);
 				return;
 			} else if(op.equals("getconfig")){
 				jo = new JSONObject();
 				jo.put("alertOnCardDue", false);
-				jo.put("fontsize", "40px");
+				jo.put("fontsize", "20px");
 				pw.print(jo);
 				return;
 			}else if(op.equals("reschedulecard")){

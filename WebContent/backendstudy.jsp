@@ -31,6 +31,7 @@ var deckConfig;
 var deckId= <%= request.getParameter("deck_id") %>;
 var currentCard = null
 var card_id = null
+var serverTimeOffset = 0 //how much the server time differs from this computer's local time
 
 dojo.addOnLoad(function(){
 	loadDeckConfig(function(){
@@ -59,7 +60,7 @@ function showNewCardButton(card){
 function showNewCard(card){
     dojo.byId('current-card').style.display="block"
     dojo.byId('current-word-front').value = card.front
-    timeShown=new Date().getTime()
+    timeShown=new Date().getTime() + serverTimeOffset
     currentCard = card
 }
 
@@ -122,17 +123,17 @@ function nextCardOrPause(){
 		load:function(data){
 			var jo = dojo.fromJson(data)
 			var now = new Date().getTime()
-			var wait = jo.timeDue - now;
+			serverTimeOffset = jo.serverTime - now;
+			var wait = jo.timeDue - jo.serverTime;
 			card_id = jo.card_id
-			
+			nextCardDueDate = new Date(now+wait)
 			if(wait > 0){
-				nextCardDueDate = new Date(jo.timeDue)
+				
 				setupForNextCard()
 				setTimeout(function(){
 	        		cardIsScheduledCallback(jo.cardToShow)
 	    		},wait )
 			}else{
-				nextCardDueDate = new Date(now)
 				setupForNextCard()
 				cardIsScheduledCallback(jo.cardToShow)
 			}
