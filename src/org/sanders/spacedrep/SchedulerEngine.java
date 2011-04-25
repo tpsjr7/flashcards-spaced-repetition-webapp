@@ -79,6 +79,8 @@ public class SchedulerEngine {
 	    if(bCorrect){
 	        c.interval = (long) ((double)c.interval * correctMultiplier);
 	    }else{
+	    	c.active = 0; //de activate to prefer reviewing known cards over relearning forgot cards and to prevent having too many missed cards
+	    	//causing it too hard to learn olds ones.
 	        c.interval = initialInterval;
 	    }
 	    

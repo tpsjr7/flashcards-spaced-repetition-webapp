@@ -1,7 +1,6 @@
 package org.sanders.spacedrep;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -193,7 +192,7 @@ public class Database {
 	
 	public static int selectCardToActivate(int deck_id) throws SQLException{
 		Connection conn = cp.getConnection();
-		String sql = "select id from card where active=0 and deck_id = ?";
+		String sql = "select id from card where active=0 and deck_id = ? order by id";
 		try{
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setMaxRows(1);
