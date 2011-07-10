@@ -234,7 +234,7 @@ Input words:<br/>
 <input type="checkbox" checked="no" id="show-uncover-button" />
 
 <label for="learn-more">Learn  More</label>
-<input type="checkbox" checked="yes" id="learn-more" />
+<input type="checkbox" checked="yes" id="learn-more" onchange="nextCardOrPause()"/>
 
 <br/>
 Next card due: <span id="card-due">none</span>
