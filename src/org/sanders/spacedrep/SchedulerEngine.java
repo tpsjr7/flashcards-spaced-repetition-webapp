@@ -42,26 +42,43 @@ public class SchedulerEngine {
 	}
 
 
-	public Card nextCardOrPause(int deck_id) throws SQLException{
+	/**
+	 * nextCardOrPausenextCardOrPause
+	 * 
+	 * If there are overdue cards then it returns the most
+	 * overdue one.
+	 * 
+	 * Activates a new card only if none are overdue and learnMore is true.
+	 * 
+	 * @param deck_id
+	 * @param learnMore - will activate a new card for learning if true, otherwise
+	 * it pretends its the end of deck and there are no new cards to show.
+	 * 
+	 * @return - Always returns a card and when it should be shown to the user. 
+	 * @throws SQLException - If there are no cards in the deck
+	 */
+	public Card nextCardOrPause(int deck_id, boolean learnMore) throws SQLException{
 		int most_overdue = Database.findMostOverdueCard(deck_id);
 		long now = new Date().getTime();
-		int cardTesting = -1;
+		int cardTestingId = -1;
+		System.out.println("learnmore: " + learnMore);
 		if(most_overdue==-1){
-			//no overdue cards, 
-            //if there are any more inactive cards, pick one to become active
-			int activateCard = Database.selectCardToActivate(deck_id);
-			if(activateCard!=-1){//there are inactive cards
-
+			//no overdue cards, so show new cards if available. 
+            //if there are any more inactive cards, pick one to become active if learnMore is true.
+			int activateCard; 
+			//single '=' on purpose in this if statement.
+			if(learnMore && (activateCard = Database.selectCardToActivate(deck_id)) !=-1){//there are inactive cards
 				Database.activateCard(deck_id, activateCard, now);
-				cardTesting = activateCard;
+				cardTestingId = activateCard;
 			}else{//all cards are already activated
-				cardTesting = Database.getEarliestCardDue(deck_id);
+				cardTestingId = Database.getEarliestCardDue(deck_id);
 			}
 		}else{
+			//Show the card that is most overdue
 			Database.updateTimeDue(deck_id, most_overdue, now);
-			cardTesting = most_overdue;
+			cardTestingId = most_overdue;
 		}
-		return Database.getCard(deck_id, cardTesting);
+		return Database.getCard(deck_id, cardTestingId);
 	}
 	
 	public void rescheduleCard(int deck_id, boolean bCorrect,long timeShown, int card_id) throws SQLException{

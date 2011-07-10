@@ -62,7 +62,10 @@ public class CardDealerServlet extends HttpServlet {
 				return;
 			}else if(op.equals("nextCardOrPause")){
 				int deck_id = Integer.parseInt(request.getParameter("deck_id"));
-				Card c = se.nextCardOrPause(deck_id);
+				
+				boolean learnMore = Boolean.parseBoolean(request.getParameter("learn_more"));
+				
+				Card c = se.nextCardOrPause(deck_id, learnMore);
 				CardCount cc = Database.countActiveCards(deck_id);
 				
 				JSONObject out = new JSONObject();

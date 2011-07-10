@@ -104,10 +104,18 @@ function showAnswer(){
     dojo.byId('answer-span').innerHTML=currentCard.back
 }
 
+/**
+ * nextCardOrPause - 
+ * retrieves the next scheduled card if there is one 
+ * and sets a timeout to show it when it is due. 
+ * Also gets the new card counts stats to display as <active>/<total>.
+ * It will not activate any new cards if "learn more" is not checked.
+ * Shows the uncover button based if the "show-uncover-button" checkbox is checked.
+ */
 function nextCardOrPause(){
 	dojo.xhrGet({
 		url:"CardDealerServlet",
-		content:{op:"nextCardOrPause",deck_id:deckId},
+		content:{op:"nextCardOrPause",deck_id:deckId, learn_more: dojo.byId('learn-more').checked},
 		error:function(err){
 			alert('could not retrieve the next card')
 		},
@@ -123,7 +131,7 @@ function nextCardOrPause(){
 			dojo.byId('inactive-count').innerHTML = jo.tc;
 			setupForNextCard()
 			setTimeout(function(){
-			    if(dojo.byId('chkbox').checked){
+			    if(dojo.byId('show-uncover-button').checked){
 					showNewCardButton(jo.cardToShow)
 				}else{
 					showNewCard(jo.cardToShow)
@@ -222,9 +230,11 @@ Input words:<br/>
 <input type="button" value="Parse" onclick="parseInputWords()"/>
 <input type="button" value="Load Config" onclick="reloadConfig()"/>
 
-<label for="chkbox">Uncover button</label>
-<input type="checkbox" checked="no" id="chkbox" />
+<label for="show-uncover-button">Uncover button</label>
+<input type="checkbox" checked="no" id="show-uncover-button" />
 
+<label for="learn-more">Learn  More</label>
+<input type="checkbox" checked="yes" id="learn-more" />
 
 <br/>
 Next card due: <span id="card-due">none</span>
