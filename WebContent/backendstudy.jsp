@@ -112,7 +112,12 @@ function showAnswer(){
  * It will not activate any new cards if "learn more" is not checked.
  * Shows the uncover button based if the "show-uncover-button" checkbox is checked.
  */
+nextCardOrPause_timer=null
 function nextCardOrPause(){
+	if(nextCardOrPause_timer!=null){
+ 		clearTimeout(nextCardOrPause_timer)
+	}
+
 	dojo.xhrGet({
 		url:"CardDealerServlet",
 		content:{op:"nextCardOrPause",deck_id:deckId, learn_more: dojo.byId('learn-more').checked},
@@ -130,7 +135,7 @@ function nextCardOrPause(){
 			dojo.byId('active-count').innerHTML = jo.ac;
 			dojo.byId('inactive-count').innerHTML = jo.tc;
 			setupForNextCard()
-			setTimeout(function(){
+			nextCardOrPause_timer=setTimeout(function(){
 			    if(dojo.byId('show-uncover-button').checked){
 					showNewCardButton(jo.cardToShow)
 				}else{
