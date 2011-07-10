@@ -40,7 +40,6 @@ dojo.addOnLoad(function(){
 		setInterval(function(){
 			dojo.byId("time-now").innerHTML=new Date().toString("h:mm:ss")
 		},1000)
-		onCheckboxChange()
 		nextCardOrPause();
 	});
 })
@@ -62,14 +61,6 @@ function showNewCard(card){
     dojo.byId('current-word-front').value = card.front
     timeShown=new Date().getTime() + serverTimeOffset
     currentCard = card
-}
-
-function onCheckboxChange(){
-    if(dojo.byId('chkbox').checked){
-        cardIsScheduledCallback  = showNewCardButton
-    }else{
-        cardIsScheduledCallback  = showNewCard
-    }
 }
 
 function loadDeckConfig(callback){
@@ -127,17 +118,17 @@ function nextCardOrPause(){
 			var wait = jo.timeDue - jo.serverTime;
 			card_id = jo.card_id
 			nextCardDueDate = new Date(now+wait)
-			if(wait > 0){
-				
-				setupForNextCard()
-				setTimeout(function(){
-	        		cardIsScheduledCallback(jo.cardToShow)
-	    		},wait )
-			}else{
-				setupForNextCard()
-				cardIsScheduledCallback(jo.cardToShow)
-			}
-			
+			wait = wait > 0 ? wait : 0
+			dojo.byId('active-count').innerHTML = jo.ac;
+			dojo.byId('inactive-count').innerHTML = jo.tc;
+			setupForNextCard()
+			setTimeout(function(){
+			    if(dojo.byId('chkbox').checked){
+					showNewCardButton(jo.cardToShow)
+				}else{
+					showNewCard(jo.cardToShow)
+				}
+	    	},wait )
 		}
 	});
 }
@@ -232,7 +223,7 @@ Input words:<br/>
 <input type="button" value="Load Config" onclick="reloadConfig()"/>
 
 <label for="chkbox">Uncover button</label>
-<input type="checkbox" checked="yes" id="chkbox" onChange="onCheckboxChange()"/>
+<input type="checkbox" checked="no" id="chkbox" />
 
 
 <br/>
@@ -240,6 +231,7 @@ Next card due: <span id="card-due">none</span>
 <br/>
 Time Now:<span id="time-now"></span>
 <br/>
+<span id="active-count">4</span>/<span id="inactive-count">5</span>
 
 <div id="show-card-button" style="display:none">
     <input type="button" value="Show Card" />

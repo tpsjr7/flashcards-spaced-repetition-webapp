@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sanders.spacedrep.Database.Card;
+import org.sanders.spacedrep.Database.CardCount;
 
 /**
  * Servlet implementation class CardDealerSerlet
@@ -62,6 +63,8 @@ public class CardDealerServlet extends HttpServlet {
 			}else if(op.equals("nextCardOrPause")){
 				int deck_id = Integer.parseInt(request.getParameter("deck_id"));
 				Card c = se.nextCardOrPause(deck_id);
+				CardCount cc = Database.countActiveCards(deck_id);
+				
 				JSONObject out = new JSONObject();
 				JSONObject cardToShow = new JSONObject();
 				cardToShow.put("front", c.foreignWritten);
@@ -70,6 +73,8 @@ public class CardDealerServlet extends HttpServlet {
 				out.put("timeDue", c.timeDue);
 				out.put("card_id", c.id);
 				out.put("serverTime", new Date().getTime());
+				out.put("ac",cc.activeCards);
+				out.put("tc", cc.totalCards);
 				pw.print(out);
 				return;
 			} else if(op.equals("getconfig")){

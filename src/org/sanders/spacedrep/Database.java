@@ -211,6 +211,15 @@ public class Database {
 		}
 	}
 	
+	/**
+	 * Makes 
+	 * @param deck_id
+	 * @param cardIds
+	 */
+	public static void markAllButTheseInactive(int deck_id, List<Integer> cardIds){
+		
+	}
+	
 	public static void updateTimeDue(int deck_id, int card_id, long timedue) throws SQLException{
 		activateCard( deck_id, card_id, timedue) ;
 	}
@@ -321,6 +330,50 @@ public class Database {
 			ps.execute();
 			ps.close();
 			return;
+		}finally{
+			conn.close();
+		}
+	}
+	
+	
+	public static class CardCount {
+		public int activeCards;
+		public int totalCards;
+	}
+	/**
+	 * Counts how many cards are active, i.e. the ones 
+	 * that are memorized plus the one that is being learned.
+	 * 
+	 * @param deckid -
+	 * @return the number of active cards
+	 * @throws SQLException 
+	 */
+	public static CardCount countActiveCards(int deckid) throws SQLException{
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try{
+			conn = cp.getConnection();
+			
+			String sql = "select count(*) as active_count, " +
+					"( select count(*) from card where deck_id=? ) as total_count " +
+					"from card where deck_id=? and active=1";
+				
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1,deckid);
+			ps.setInt(2,deckid);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			CardCount cc = new CardCount();
+			if(rs.first()){
+				cc.activeCards = rs.getInt(1);
+				cc.totalCards = rs.getInt(2);
+			}else{
+				throw new RuntimeException("Couldn't count cards for the deck.");
+			}
+			
+			ps.close();
+			return cc;
 		}finally{
 			conn.close();
 		}
