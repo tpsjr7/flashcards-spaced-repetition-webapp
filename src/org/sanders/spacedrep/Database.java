@@ -281,9 +281,10 @@ public class Database {
 			ps.setLong(4, now);
 			ps.setLong(5, now);
 			ps.setInt(6, deck_id);
+            
+            ps.setMaxRows(1);
 			ResultSet rs = ps.executeQuery();
 			int ret;
-			
 			if(rs.first()){
 				ret = rs.getInt(1);
 			}else{
