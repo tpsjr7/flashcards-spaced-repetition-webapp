@@ -211,15 +211,6 @@ public class Database {
 		}
 	}
 	
-	/**
-	 * Makes 
-	 * @param deck_id
-	 * @param cardIds
-	 */
-	public static void markAllButTheseInactive(int deck_id, List<Integer> cardIds){
-		
-	}
-	
 	public static void updateTimeDue(int deck_id, int card_id, long timedue) throws SQLException{
 		activateCard( deck_id, card_id, timedue) ;
 	}
