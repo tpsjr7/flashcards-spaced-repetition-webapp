@@ -84,7 +84,7 @@ public class CardDealerServlet extends HttpServlet {
 				jo = new JSONObject();
 				jo.put("alertOnCardDue", false);
 				jo.put("fontsize", "20px");
-				pw.print(jo);
+				pw.print(jo.toString(4));
 				return;
 			}else if(op.equals("reschedulecard")){
 				int deck_id = Integer.parseInt(request.getParameter("deck_id"));
