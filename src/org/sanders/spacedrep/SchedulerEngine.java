@@ -14,7 +14,7 @@ import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 public class SchedulerEngine {
 	
 	private final long initialInterval = 2000;
-	private final boolean measureRealIntervals = false;
+	private final boolean measureRealIntervals = true;
 	private final double correctMultiplier = 6.0;
 
 	public void addCards(JSONObject params) throws JSONException, SQLException{
