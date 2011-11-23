@@ -32,6 +32,8 @@ var deckId= <%= request.getParameter("deck_id") %>;
 var currentCard = null
 var card_id = null
 var serverTimeOffset = 0 //how much the server time differs from this computer's local time
+var timeShownFront;
+var timeRemembered;
 
 dojo.addOnLoad(function(){
 	loadDeckConfig(function(){
@@ -59,7 +61,7 @@ function showNewCardButton(card){
 function showNewCard(card){
     dojo.byId('current-card').style.display="block"
     dojo.byId('current-word-front').value = card.front
-    timeShown=new Date().getTime() + serverTimeOffset
+    timeShownFront=new Date().getTime() + serverTimeOffset
     currentCard = card
 }
 
@@ -100,6 +102,8 @@ function setupForNextCard(){
 }
 
 function showAnswer(){
+    timeRemembered = new Date().getTime();
+    dojo.byId("response-time").innerHTML = (timeRemembered - timeShownFront)/1000;
     dojo.byId('answer-div').style.display="block"
     dojo.byId('answer-span').innerHTML=currentCard.back
 }
@@ -208,13 +212,14 @@ function nextCardOrPause(learnMore){
 	}
 
 	function _rescheduleCurrentCard(bCorrect){
+
 		dojo.xhrGet({
 			url:"CardDealerServlet",
 			content:{
 				op:"reschedulecard",
 				deck_id:deckId,	
 				bCorrect:bCorrect,
-				timeShown:timeShown,
+				timeShown:timeShownFront,
 				card_id:card_id
 			},
 			load:function(data){
@@ -249,7 +254,11 @@ Next card due: <span id="card-due">none</span>
 <br/>
 Time Now:<span id="time-now"></span>
 <br/>
-<span id="active-count">4</span>/<span id="inactive-count">5</span>
+
+Response Time: <span id="response-time">N/A</span>
+<br/>
+
+<span id="active-count">0</span>/<span id="inactive-count">0</span>
 
 <div id="show-card-button" style="display:none">
     <input type="button" value="Show Card" />
