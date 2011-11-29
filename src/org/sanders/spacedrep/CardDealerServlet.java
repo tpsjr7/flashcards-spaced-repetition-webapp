@@ -69,15 +69,23 @@ public class CardDealerServlet extends HttpServlet {
 				CardCount cc = Database.countActiveCards(deck_id);
 				
 				JSONObject out = new JSONObject();
-				JSONObject cardToShow = new JSONObject();
-				cardToShow.put("front", c.foreignWritten);
-				cardToShow.put("back", c.pronunciation +" - "+c.translation);
-				out.put("cardToShow", cardToShow);
-				out.put("timeDue", c.timeDue);
-				out.put("card_id", c.id);
-				out.put("serverTime", new Date().getTime());
-				out.put("ac",cc.activeCards);
-				out.put("tc", cc.totalCards);
+                                out.put("serverTime", new Date().getTime());
+                                out.put("ac",cc.activeCards);
+                                out.put("tc", cc.totalCards);
+                                
+                                if(c!=null){
+                                    JSONObject cardToShow = new JSONObject();
+                                    cardToShow.put("front", c.foreignWritten);
+                                    cardToShow.put("back", c.pronunciation +" - "+c.translation);
+                                    out.put("cardToShow", cardToShow);
+                                    out.put("timeDue", c.timeDue);
+                                    out.put("card_id", c.id);
+
+                                }else{
+                                    //no cards are due
+                                    out.put("card_id", -1);
+                                }
+
 				pw.print(out);
 				return;
 			} else if(op.equals("getconfig")){

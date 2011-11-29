@@ -252,7 +252,8 @@ public class Database {
 			if(rs.first()){
 				id = rs.getInt(1);
 			}else{
-				throw new RuntimeException("could not find a card due.");
+				//throw new RuntimeException("could not find a card due.");
+                                id = -1;
 			}
 			ps.close();
 			return id;

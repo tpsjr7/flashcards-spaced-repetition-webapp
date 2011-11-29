@@ -46,9 +46,6 @@ dojo.addOnLoad(function(){
 	});
 })
 
-function showDueTime(){
-	dojo.byId('card-due').innerHTML = nextCardDueDate.toString("h:mm:ss")
-}
 function showNewCardButton(card){
     var b = dojo.byId('show-card-button')
     b.style.display="block"
@@ -93,12 +90,12 @@ function addCards(/* json array */ cards, callback,errorcallback){
 	
 }
 
-function setupForNextCard(){
+function setupForNextCard(nextCardDueDate){
     dojo.byId('show-card-button').style.display="none"
     dojo.byId('answer-div').style.display="none"
     dojo.byId('current-word-front').value = ""
     dojo.byId('current-card').style.display="none"
-    showDueTime();
+    dojo.byId('card-due').innerHTML = nextCardDueDate == null ? "(none)" :  nextCardDueDate.toString("h:mm:ss")
 }
 
 function showAnswer(){
@@ -123,6 +120,7 @@ nextCardOrPause_timer=null
 function nextCardOrPause(learnMore){
 	if(nextCardOrPause_timer!=null){
  		clearTimeout(nextCardOrPause_timer)
+                nextCardOrPause_timer = null;
 	}
 
 	dojo.xhrGet({
@@ -132,24 +130,30 @@ function nextCardOrPause(learnMore){
 			alert('could not retrieve the next card')
 		},
 		load:function(data){
-			var jo = dojo.fromJson(data)
-			var now = new Date().getTime()
-			serverTimeOffset = jo.serverTime - now;
-			var wait = jo.timeDue - jo.serverTime;
-			card_id = jo.card_id
-			nextCardDueDate = new Date(now+wait)
-			wait = wait > 0 ? wait : 0
-			dojo.byId('active-count').innerHTML = jo.ac;
-			dojo.byId('inactive-count').innerHTML = jo.tc;
-			setupForNextCard()
-			nextCardOrPause_timer=setTimeout(function(){
-			    if(dojo.byId('show-uncover-button').checked){
-					showNewCardButton(jo.cardToShow)
-				}else{
-					showNewCard(jo.cardToShow)
-				}
-	    	},wait )
-		}
+                    var jo = dojo.fromJson(data)
+                    var now = new Date().getTime()
+                    card_id = jo.card_id
+                    serverTimeOffset = jo.serverTime - now;
+                    dojo.byId('active-count').innerHTML = jo.ac;
+                    dojo.byId('total-count').innerHTML = jo.tc;
+                    
+                    if(card_id != -1){
+                        var wait = jo.timeDue - jo.serverTime;
+                        
+                        wait = wait > 0 ? wait : 0
+                        var nextCardDueDate = new Date(now+wait)
+                        setupForNextCard(nextCardDueDate)
+                        nextCardOrPause_timer=setTimeout(function(){
+                            if(dojo.byId('show-uncover-button').checked){
+                                showNewCardButton(jo.cardToShow)
+                            }else{
+                                showNewCard(jo.cardToShow)
+                            }
+                        },wait );
+                    }else{
+                        setupForNextCard(null)
+                    }
+                }
 	});
 }
 
@@ -258,7 +262,7 @@ Time Now:<span id="time-now"></span>
 Response Time: <span id="response-time">N/A</span>
 <br/>
 
-<span id="active-count">0</span>/<span id="inactive-count">0</span>
+<span id="active-count">0</span>/<span id="total-count">0</span>
 
 <div id="show-card-button" style="display:none">
     <input type="button" value="Show Card" />

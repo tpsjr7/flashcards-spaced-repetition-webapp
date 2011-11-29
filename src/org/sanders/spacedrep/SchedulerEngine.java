@@ -54,7 +54,8 @@ public class SchedulerEngine {
 	 * @param learnMore - will activate a new card for learning if true, otherwise
 	 * it pretends its the end of deck and there are no new cards to show.
 	 * 
-	 * @return - Always returns a card and when it should be shown to the user. 
+	 * @return - Always returns a card and when it should be shown to the user.
+         *  unless there is no card due, then it returns null.
 	 * @throws SQLException - If there are no cards in the deck
 	 */
 	public Card nextCardOrPause(int deck_id, boolean learnMore) throws SQLException{
@@ -72,6 +73,10 @@ public class SchedulerEngine {
 				cardTestingId = activateCard;
 			}else{//all cards are already activated
 				cardTestingId = Database.getEarliestCardDue(deck_id);
+                                if(cardTestingId==-1){
+                                    //there are no cards due
+                                    return null;
+                                }
 			}
 		}else{
 			//Show the card that is most overdue
