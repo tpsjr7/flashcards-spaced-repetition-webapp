@@ -15,7 +15,7 @@ public class SchedulerEngine {
 	
 	private final long initialInterval = 2000;
 	private final boolean measureRealIntervals = true;
-	private final double correctMultiplier = 6.0;
+	private final double correctMultiplier = 2.2;
 
 	public void addCards(JSONObject params) throws JSONException, SQLException{
 		CreateCardsParams ccp = new CreateCardsParams();
