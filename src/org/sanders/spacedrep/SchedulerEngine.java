@@ -13,18 +13,20 @@ import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 
 public class SchedulerEngine {
 	
-	private final long initialInterval = 2000;
-	private final boolean measureRealIntervals = true;
-	private final double correctMultiplier = 2.2;
+	private static final long initialInterval = 60000*5;
+	
+	private static final float minimumEaseFactor = 1.3f;
+	public static final float defaultEaseFactor = 2.3f;
+	
+	private static final int instantInterval = 3000;
+	private static final int hesitationInterval = 8000;
 
+	private static final long minimumTimeBeforeAdjust = 5* 60 * 1000;
+        
 	public void addCards(JSONObject params) throws JSONException, SQLException{
 		CreateCardsParams ccp = new CreateCardsParams();
 		ccp.cards = new ArrayList<CardSides>();
-		ccp.active = 0;
 		ccp.deckID = params.getInt("deckId");
-		ccp.interval = this.initialInterval;
-		ccp.timeDue = 0;
-		ccp.lastTimeTested = Long.MAX_VALUE;
 		
 		JSONArray cards = params.getJSONArray("cards");
 		
@@ -43,73 +45,144 @@ public class SchedulerEngine {
 
 
 	/**
-	 * nextCardOrPausenextCardOrPause
+	 * nextCardOrPause
 	 * 
 	 * If there are overdue cards then it returns the most
-	 * overdue one.
+	 * overdue one based on the fraction relative to its interval it is overdue.
 	 * 
 	 * Activates a new card only if none are overdue and learnMore is true.
+	 *
+	 * If there are none over due and no more to learn, then have the font
+	 * end wait until the earliest card will be due. 
 	 * 
 	 * @param deck_id
 	 * @param learnMore - will activate a new card for learning if true, otherwise
 	 * it pretends its the end of deck and there are no new cards to show.
 	 * 
 	 * @return - Always returns a card and when it should be shown to the user.
-         *  unless there is no card due, then it returns null.
+     *  unless there is no card due, then it returns null.
 	 * @throws SQLException - If there are no cards in the deck
 	 */
 	public Card nextCardOrPause(int deck_id, boolean learnMore) throws SQLException{
-		int most_overdue = Database.findMostOverdueCard(deck_id);
+		int most_overdue = Database.findMostOverdueCard(deck_id);//find most percent overdue card ( time overdue / interval)
 		long now = new Date().getTime();
 		int cardTestingId = -1;
 		System.out.println("learnmore: " + learnMore);
 		if(most_overdue==-1){
-			//no overdue cards, so show new cards if available. 
+			//no overdue cards, so show new cards if available and the user is
+			//learning new cards.
             //if there are any more inactive cards, pick one to become active if learnMore is true.
 			int activateCard; 
 			//single '=' on purpose in this if statement.
-			if(learnMore && (activateCard = Database.selectCardToActivate(deck_id)) !=-1){//there are inactive cards
+			if(learnMore && (activateCard = Database.selectCardToActivate(deck_id)) !=-1){
+				//there are inactive cards, pick a new card to activate and learn
 				Database.activateCard(deck_id, activateCard, now);
 				cardTestingId = activateCard;
-			}else{//all cards are already activated
+			}else{
+				//all cards are already activated, so have the front end
+				//wait (pause) until the earliest card will be due.
 				cardTestingId = Database.getEarliestCardDue(deck_id);
-                                if(cardTestingId==-1){
-                                    //there are no cards due
-                                    return null;
-                                }
+                if(cardTestingId==-1){
+                    //there are no cards due
+                   return null;
+                }
 			}
 		}else{
 			//Show the card that is most overdue
-			Database.updateTimeDue(deck_id, most_overdue, now);
+			Database.activateCard(deck_id, most_overdue, now);
 			cardTestingId = most_overdue;
 		}
 		return Database.getCard(deck_id, cardTestingId);
 	}
-	
-	public void rescheduleCard(int deck_id, boolean bCorrect,long timeShown, int card_id) throws SQLException{
+
+        private boolean isCorrect(int answerVersion, int answer){
+            if(answerVersion!=0){
+                throw new RuntimeException("Answer version "+answerVersion + " is not supported.");
+            }
+            return answer == 2 ;
+        }
+        private float udpateEaseFactor(float oldFactor, int answerVersion, int answer, long responseTime, long lastActualInterval, long actualInterval, long lastTimeShownBack){
+            if(answerVersion!=0){
+                throw new RuntimeException("Answer version "+answerVersion + " is not supported.");
+            }
+
+			if(lastTimeShownBack==0){
+				System.out.println("card just activated, keeping ease factor: " + oldFactor);
+				return oldFactor;
+			}
+			
+			if(lastActualInterval < minimumTimeBeforeAdjust){
+                //dont start adjusting the ease factor until the card is at least 5 minutes old.
+                System.out.println("less than " + minimumTimeBeforeAdjust + " keeping ease factor " + oldFactor);
+                return oldFactor;
+            }
+
+            //based on http://www.supermemo.com/english/ol/sm2.htm with some tweaks
+            //0 no clue - 0.8
+            //1 familiar - 0.4
+            //2 correct
+            //response time 0 to 3 seconds + .1
+            //response time 3 to 8 seconds +0 ( no change)
+            //more than 8 seconds serious difficulty -.15
+            float effectiveFactor = lastActualInterval == 0  ? oldFactor : (float)actualInterval / (float)lastActualInterval; //old decks may not have a lastActualInterval and will be 0, so just use the oldFactor
+
+            //effective ease factor is the ease factor it would have been considering how much time it was over due
+
+            //if it was way past due and it was missed, then calculate the minimum of the old factor vs the effective factor minus correction
+
+            float newFactor;
+
+            if(answer==0){
+                //wrong, had no clue
+                newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .8f), minimumEaseFactor);
+            }else  if(answer==1){
+                //wrong but familiar
+                newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .4f), minimumEaseFactor);
+            }else if(answer==2){
+                //corect, adjust based on response time
+                if(responseTime >= 0 && responseTime <= instantInterval){
+                    newFactor = oldFactor + 0.1f;
+                }else if(responseTime > instantInterval && responseTime <= hesitationInterval){
+                    newFactor = oldFactor;
+                } else if(responseTime > hesitationInterval){
+					newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .15f), minimumEaseFactor);
+                }else{
+                    throw new RuntimeException("invalid response time "+responseTime);
+                }
+            }else{
+                throw new RuntimeException("invalid answer " + answer + " for answer version "+answerVersion);
+            }
+            System.out.println("answer: "+ answer +", old factor:" + oldFactor +", effective factor: "+ effectiveFactor+ ", new factor:"+newFactor+", responseTime:" + responseTime +", time diff: "+actualInterval+", last interval: "+lastActualInterval );
+            return newFactor;
+        }
+
+	public void rescheduleCard(int deck_id, long timeShownBack,  int card_id, long responseTime, int answerVersion, int answer) throws SQLException {
+
+		Card c = Database.getCard(deck_id, card_id);
 	    
-	    long now = new Date().getTime();
-	    
-	    Card c = Database.getCard(deck_id, card_id);
-	    long  diff = timeShown - c.lastTimeTested;
-	    
-	    
-	    if(this.measureRealIntervals && diff > c.interval){
-	        c.interval = diff ;
-	    }
-	    
-	    if(bCorrect){
-	        c.interval = (long) ((double)c.interval * correctMultiplier);
+		//TODO: think through if the card has been made inactive and has just
+		//been reactivated and shown, lastTimeTested should be set to 0
+		//so how will diff be used?
+
+		long actualInterval =  c.lastTimeShownBack == 0 ? initialInterval : timeShownBack -  c.lastTimeShownBack;
+		
+        c.easeFactor = udpateEaseFactor(c.easeFactor, answerVersion, answer, responseTime,  c.lastActualInterval,actualInterval,  c.lastTimeShownBack);
+
+	    if(isCorrect(answerVersion, answer)){
+			c.scheduledInterval = (long) ((double)actualInterval * c.easeFactor);
+			c.timeDue = timeShownBack + c.scheduledInterval;
+			c.lastTimeShownBack = timeShownBack;
+			c.lastActualInterval = actualInterval;
 	    }else{
 	    	c.active = 0; //de activate to prefer reviewing known cards over relearning forgot cards and to prevent having too many missed cards
 	    	//causing it too hard to learn olds ones.
-	        c.interval = initialInterval;
+			c.scheduledInterval = initialInterval;
+	        c.lastActualInterval = 0; //TODO: how should this be handled?
+			c.lastTimeShownBack = 0 ; //TODO: make sure this has a sane default value when creating new cards
+			c.timeDue = 0;
 	    }
-	    
-	    c.timeDue = now + c.interval;
-	    
-	    c.lastTimeTested = now;
-	    
+		
+	    System.out.println(c.toString());
 	    Database.updateCard(c);
 	}
 	

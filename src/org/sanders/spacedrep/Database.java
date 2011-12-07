@@ -30,14 +30,7 @@ public class Database {
 		
 		try {
 			cp = JdbcConnectionPool.create("jdbc:h2:/home/tpsjr7/workspace/SpacedRepServer/testdb/testdb", "sa", "sa");
-			Connection conn;
-			conn = cp.getConnection();
-			Statement st = conn.createStatement();
-			st.execute("create table if not exists deck ( id int primary key auto_increment, name varchar(255) unique)");
-			st.execute("create table if not exists card  ( id int primary key auto_increment, " +
-					"deck_id int, foreign_written varchar(255), pronunciation varchar(255),  " +
-					"translation varchar(255), interval int8, timedue int8, lastTimeTested int8, active tinyint, foreign key(deck_id) references deck(id) )");
-			conn.close();
+			setupDb();
 			initialized = true;
 		} catch (SQLException e) {
 			initialized = false;
@@ -45,7 +38,50 @@ public class Database {
 		}
 		
 	}
-	
+	private static void setupDb() throws SQLException{
+			Connection conn;
+			conn = cp.getConnection();
+			Statement st = conn.createStatement();
+			st.execute("create table if not exists deck ( id int primary key auto_increment, name varchar(255) unique)");
+			st.execute("create table if not exists card  ( id int primary key auto_increment, " +
+					"deck_id int, foreign_written varchar(255), pronunciation varchar(255),  " +
+					"translation varchar(255), scheduled_interval int8, timedue int8, last_time_shown_back int8, "
+					+ "active tinyint, ease_factor double(6), last_actual_interval int8, foreign key(deck_id) references deck(id) )");
+			conn.close();
+	}
+	public static void useDatabase(String path) throws SQLException{
+			cp.dispose();
+			cp = JdbcConnectionPool.create("jdbc:h2:"+path, "sa", "sa");
+			setupDb();
+	}
+	public static void  removeDeck(int deck_id) throws SQLException{
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try{
+			conn = cp.getConnection();
+			conn.setAutoCommit(false);
+			System.out.println("deckid: "+deck_id);
+			ps = conn.prepareStatement("delete from card where deck_id = ?");
+			ps.setInt(1, deck_id);
+			ps.executeUpdate();
+			ps.close();
+
+			ps = conn.prepareStatement("delete from deck where id = ?");
+			ps.setInt(1, deck_id);
+			ps.executeUpdate();
+			ps.close();
+			try{
+				conn.commit();
+			}catch(SQLException e){
+				conn.rollback();
+				throw new SQLException(e);
+			}
+		}finally{
+
+			conn.setAutoCommit(true);
+			conn.close();
+		}
+	}
 	public static void destroy(){
 		try {
 			cp.dispose();
@@ -89,10 +125,6 @@ public class Database {
 			public String translation;
 		}
 		public int deckID;
-		public long interval;
-		public long timeDue;
-		public long lastTimeTested;
-		public byte active;
 		public List<CardSides> cards;
 	}
 	
@@ -102,23 +134,20 @@ public class Database {
 		public String foreignWritten;
 		public String pronunciation;
 		public String translation;
-		public long interval;
+		public long scheduledInterval; 
+		public long lastActualInterval; 
 		public long timeDue;
-		public long lastTimeTested;
+		public long lastTimeShownBack; //TODO: update database to reflect this name change
 		public byte active;
-		
-		public Card deepCopy(){
-			Card n = new Card();
-			n.id = id;
-			n.deck_id = deck_id;
-			n.foreignWritten = new String(foreignWritten);
-			n.pronunciation = new String(pronunciation);
-			n.translation = new String(translation);
-			n.interval = interval;
-			n.timeDue = timeDue;
-			n.lastTimeTested = lastTimeTested;
-			n.active = active;
-			return n;
+		public float easeFactor;
+
+		@Override
+		public String toString(){
+			String s  = "";
+			s+= "id: "+id+" deck_id: "+deck_id+" foreignWritten: "+foreignWritten +" pro: "+pronunciation + " trans: "+translation +"\n";
+			s+=" scheduledInterval: "+scheduledInterval +" lastActualInterval: "+lastActualInterval +" timeDue: " +
+					timeDue +" lastTimeShownBack: "+lastTimeShownBack+" active: "+active +" easeFactor: "+easeFactor;
+			return s;
 		}
 	}
 	
@@ -127,12 +156,12 @@ public class Database {
 		PreparedStatement ps = null;
 		
 		//deck_id int, foreign_written varchar(255), pronunciation varchar(255),  " +
-		//"translation varchar(255), interval int8, timedue int8, lastTimeTested int8, active tinyint
+		//"translation varchar(255), interval int8, timedue int8, last_time_shown_back int8, active tinyint
 		
 		try{
 			conn = cp.getConnection();
 			ps = conn.prepareStatement("select foreign_written, pronunciation, translation, " +
-					"interval, timedue, lastTimeTested, active from card where id=? and deck_id=?");
+					"scheduled_interval, timedue, last_time_shown_back, active, ease_factor, last_actual_interval from card where id=? and deck_id=?");
 			//ps.setString(1, prefix+"%");
 			ps.setInt(1,card_id);
 			ps.setInt(2, deck_id);
@@ -141,15 +170,17 @@ public class Database {
 			Card c = new Card();
 			
 			if(rs.first()){
-				c.foreignWritten = rs.getString(1);
-				c.pronunciation = rs.getString(2);
-				c.translation = rs.getString(3);
-				c.interval = rs.getLong(4);
-				c.timeDue = rs.getLong(5);
-				c.lastTimeTested = rs.getLong(6);
-				c.active = rs.getByte(7);
+				c.foreignWritten = rs.getString("foreign_written");
+				c.pronunciation = rs.getString("pronunciation");
+				c.translation = rs.getString("translation");
+				c.timeDue = rs.getLong("timedue");
+				c.lastTimeShownBack = rs.getLong("last_time_shown_back");
+				c.active = rs.getByte("active");
+				c.lastActualInterval = rs.getLong("last_actual_interval");
+				c.scheduledInterval = rs.getLong("scheduled_interval");
 				c.id = card_id;
 				c.deck_id = deck_id;
+                c.easeFactor = (float)rs.getDouble("ease_factor");
 			}else{
 				throw new RuntimeException("Could not find card with id: "+card_id+" in deck: "+deck_id);
 			}
@@ -211,10 +242,6 @@ public class Database {
 		}
 	}
 	
-	public static void updateTimeDue(int deck_id, int card_id, long timedue) throws SQLException{
-		activateCard( deck_id, card_id, timedue) ;
-	}
-	
 	public static void activateCard(int deck_id, int card_id, long timedue) throws SQLException{
 		Connection conn = cp.getConnection();
 		String sql = "update card set active=1, timedue=? where id=? and deck_id=? ";
@@ -233,7 +260,14 @@ public class Database {
 			conn.close();
 		}
 	}
-	
+
+	/**
+	 * Finds the card that has the minimum timedue timestamp
+	 *
+	 * @param deck_id
+	 * @return - id of found card or -1 if there are no cards due
+	 * @throws SQLException
+	 */
 	public static int getEarliestCardDue(int deck_id) throws SQLException{
 		Connection conn = cp.getConnection();
 		String sql = "select t1.id from ( select id, timedue from card where deck_id=? and active=1 ) as t1 " +
@@ -253,7 +287,7 @@ public class Database {
 				id = rs.getInt(1);
 			}else{
 				//throw new RuntimeException("could not find a card due.");
-                                id = -1;
+                id = -1;
 			}
 			ps.close();
 			return id;
@@ -261,16 +295,24 @@ public class Database {
 			conn.close();
 		}
 	}
-	
+
+	/**
+	 * Finds the card that is most overdue relative to its interval such that
+	 * a card that is 5 seconds overdue but with a 1 second interval is shown
+	 * before a card that is a year overdue but has a 10 year interval.
+	 * @param deck_id
+	 * @return - id of the found card or -1 if there are no cards due
+	 * @throws SQLException
+	 */
 	public static int findMostOverdueCard(int deck_id) throws SQLException{
 		
 		Connection conn = cp.getConnection();
 		String sql;
 		
 		try{
-			sql = "select t1.id from ( select id, ( ? - timedue  ) / interval as overdue_fraction " +
+			sql = "select t1.id from ( select id, ( ? - timedue  ) / scheduled_interval as overdue_fraction " +
 					"from card where ? > timedue  and deck_id = ? and active=1 ) as t1 " +
-					"left outer join ( select id, ( ? - timedue  ) / interval as overdue_fraction " +
+					"left outer join ( select id, ( ? - timedue  ) / scheduled_interval as overdue_fraction " +
 					"from card where ? > timedue  and deck_id = ? and active=1 ) as t2 " +
 					"on t1.OVERDUE_FRACTION <  t2.OVERDUE_FRACTION where t2.id is null; ";
 					
@@ -306,20 +348,21 @@ public class Database {
 		try{
 			conn = cp.getConnection();
 			 ps = conn.prepareStatement("update card set deck_id=?, " +
-					"foreign_written=?, pronunciation=?, translation=? , interval=?, timedue=?, " +
-					"lastTimeTested=?, active=? where id=? ");
+					"foreign_written=?, pronunciation=?, translation=? , scheduled_interval=?, timedue=?, " +
+					"last_time_shown_back=?, active=?, ease_factor=?, last_actual_interval=? where id=? ");
 			
 
 			ps.setInt(1, card.deck_id);
 			ps.setString(2, card.foreignWritten);
 			ps.setString(3, card.pronunciation);
 			ps.setString(4, card.translation);
-			ps.setLong(5, card.interval);
+			ps.setLong(5, card.scheduledInterval);
 			ps.setLong(6,card.timeDue);
-			ps.setLong(7, card.lastTimeTested);
+			ps.setLong(7, card.lastTimeShownBack);
 			ps.setByte(8, card.active);
-			ps.setInt(9, card.id);
-
+            ps.setDouble(9, card.easeFactor);
+			ps.setLong(10, card.lastActualInterval);
+            ps.setInt(11, card.id);
 			ps.execute();
 			ps.close();
 			return;
@@ -332,6 +375,7 @@ public class Database {
 	public static class CardCount {
 		public int activeCards;
 		public int totalCards;
+		public int dueCards;
 	}
 	/**
 	 * Counts how many cards are active, i.e. the ones 
@@ -349,18 +393,21 @@ public class Database {
 			
 			String sql = "select count(*) as active_count, " +
 					"( select count(*) from card where deck_id=? ) as total_count " +
+					" , ( select count(*) from card where deck_id=? and timedue <= ? and active=1 ) as num_due "+
 					"from card where deck_id=? and active=1";
 				
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1,deckid);
 			ps.setInt(2,deckid);
-			
+			ps.setLong(3, System.currentTimeMillis());
+			ps.setInt(4,deckid);
+
 			ResultSet rs = ps.executeQuery();
-			
 			CardCount cc = new CardCount();
 			if(rs.first()){
-				cc.activeCards = rs.getInt(1);
-				cc.totalCards = rs.getInt(2);
+				cc.activeCards = rs.getInt("active_count");
+				cc.totalCards = rs.getInt("total_count");
+				cc.dueCards = rs.getInt("num_due");
 			}else{
 				throw new RuntimeException("Couldn't count cards for the deck.");
 			}
@@ -379,8 +426,8 @@ public class Database {
 				conn = cp.getConnection();
 				conn.setAutoCommit(false);
 				 ps = conn.prepareStatement("insert into card( deck_id, " +
-						"foreign_written, pronunciation, translation , interval, timedue, " +
-						"lastTimeTested, active) values ( ?,?,?,?,?,?,?,?)");
+						"foreign_written, pronunciation, translation , scheduled_interval, timedue, " +
+						"last_time_shown_back, active, ease_factor, last_actual_interval) values ( ?,?,?,?,?,?,?,?,?,?)");
 				
 				for(int i = 0 ; i < ccp.cards.size() ; i++){
 					CardSides cs = ccp.cards.get(i);
@@ -388,10 +435,12 @@ public class Database {
 					ps.setString(2, cs.foreignWritten);
 					ps.setString(3, cs.pronunciation);
 					ps.setString(4, cs.translation);
-					ps.setLong(5, ccp.interval);
-					ps.setLong(6,ccp.timeDue);
-					ps.setLong(7, ccp.lastTimeTested);
-					ps.setByte(8, ccp.active);
+					ps.setLong(5, 0); //scheduled_interval
+					ps.setLong(6,0);
+					ps.setLong(7, 0);
+					ps.setByte(8, (byte)0);
+					ps.setDouble(9, SchedulerEngine.defaultEaseFactor);
+					ps.setLong(10,0);
 					ps.addBatch();
 				}
 	

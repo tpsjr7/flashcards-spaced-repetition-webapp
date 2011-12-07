@@ -1,11 +1,11 @@
 <html>
 <head>
-
 <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true" ></script>
+
 <script type="text/javascript" src="js/dojo-release-1.5.0/dijit/dijit.js"></script>
 <style type="text/css">
-@import "js/dojo-release-1.5.0/dijit/themes/tundra/tundra.css";
-@import "js/dojo-release-1.5.0/dojo/resources/dojo.css"
+@import "js/dojo-release-1.5.0/dijit/themes/tundra/tundra.css" ;
+
 </style>
 
 <script type="text/javascript">
@@ -19,14 +19,16 @@ dojo.addOnLoad(function(){
 
 <script>
 function createDeck(){
+	var name = dojo.byId('deck-name').value
 	dojo.xhrPost({
 		url:"CreateDeck",
-		content:{"deck-name":dojo.byId('deck-name').value},	
+		content:{"deck-name":name},
 		error: function(err){
 			dojo.byId("status-div").innerHTML=dojo.toJson(err)
 		},
 		load: function(data){
-			dojo.byId("status-div").innerHTML=dojo.fromJson(data).status		
+			dojo.byId("status-div").innerHTML=dojo.fromJson(data).status
+			dojo.attr(deckSelect, "displayedValue", name);
 		}
 		
 	});
@@ -34,12 +36,40 @@ function createDeck(){
 }
 
 function openDeck(){
-	document.location="backendstudy.jsp?deck_id="+thestore.getValue(deckSelect.item,'id')
-	//alert("value of select is: "+deckSelect.get('value'))
-	//alert("howdy2")	
-	//
+
+	if(!deckSelect.isValid()){
+		alert("Select a valid deck first.");
+		return;
+	}
+	document.location="backendstudy.jsp?deck_id=" + thestore.getValue(deckSelect.item,'id')
+	
 }
 
+function removeDeck(){
+	if(!deckSelect.isValid()){
+		alert("Select a valid deck first.");
+		return;
+	}
+	var resp = prompt("Remove deck? (type yes to remove)");
+	
+	if(resp!="yes"){
+		alert("Did not remove deck.")
+		return;
+	}
+	var name = thestore.getValue(deckSelect.item,'name')
+	dojo.xhrPost({
+		url:"RemoveDeck",
+		content:{"deck_id":thestore.getValue(deckSelect.item,'id') },
+		error: function(err){
+			dojo.byId("status-div").innerHTML=dojo.toJson(err)
+		},
+		load: function(data){
+			dojo.byId("status-div").innerHTML = dojo.fromJson(data).status + ' ' + name
+			dojo.attr(deckSelect, "displayedValue", "")
+		}
+
+	});
+}
 </script>
    
 </head>
@@ -54,7 +84,7 @@ function openDeck(){
 	store=thestore pageSize=20 ></select>
 	
 <input type="button" value="Open" onclick="openDeck()"/>
-
+<input type="button" value="Remove" onclick="removeDeck()"/>
 
 <div>
 Create deck:

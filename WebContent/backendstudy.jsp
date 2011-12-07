@@ -33,8 +33,8 @@ var currentCard = null
 var card_id = null
 var serverTimeOffset = 0 //how much the server time differs from this computer's local time
 var timeShownFront;
-var timeRemembered;
-
+var timeShownBack; //time when the user clicked show answer
+var responseTime; // time it takes for user to click show answer in milliseconds
 dojo.addOnLoad(function(){
 	loadDeckConfig(function(){
 		dojo.byId("current-word-front").style.fontSize=deckConfig.fontsize;
@@ -99,8 +99,9 @@ function setupForNextCard(nextCardDueDate){
 }
 
 function showAnswer(){
-    timeRemembered = new Date().getTime();
-    dojo.byId("response-time").innerHTML = (timeRemembered - timeShownFront)/1000;
+	timeShownBack = new Date().getTime() + serverTimeOffset
+	responseTime =  timeShownBack  - timeShownFront
+    dojo.byId("response-time").innerHTML = responseTime /1000;
     dojo.byId('answer-div').style.display="block"
     dojo.byId('answer-span').innerHTML=currentCard.back
 }
@@ -120,7 +121,7 @@ nextCardOrPause_timer=null
 function nextCardOrPause(learnMore){
 	if(nextCardOrPause_timer!=null){
  		clearTimeout(nextCardOrPause_timer)
-                nextCardOrPause_timer = null;
+		nextCardOrPause_timer = null;
 	}
 
 	dojo.xhrGet({
@@ -130,30 +131,30 @@ function nextCardOrPause(learnMore){
 			alert('could not retrieve the next card')
 		},
 		load:function(data){
-                    var jo = dojo.fromJson(data)
-                    var now = new Date().getTime()
-                    card_id = jo.card_id
-                    serverTimeOffset = jo.serverTime - now;
-                    dojo.byId('active-count').innerHTML = jo.ac;
-                    dojo.byId('total-count').innerHTML = jo.tc;
-                    
-                    if(card_id != -1){
-                        var wait = jo.timeDue - jo.serverTime;
-                        
-                        wait = wait > 0 ? wait : 0
-                        var nextCardDueDate = new Date(now+wait)
-                        setupForNextCard(nextCardDueDate)
-                        nextCardOrPause_timer=setTimeout(function(){
-                            if(dojo.byId('show-uncover-button').checked){
-                                showNewCardButton(jo.cardToShow)
-                            }else{
-                                showNewCard(jo.cardToShow)
-                            }
-                        },wait );
-                    }else{
-                        setupForNextCard(null)
-                    }
-                }
+			var jo = dojo.fromJson(data)
+			var now = new Date().getTime()
+			card_id = jo.card_id
+			serverTimeOffset = jo.serverTime - now;
+			dojo.byId('active-count').innerHTML = jo.ac;
+			dojo.byId('total-count').innerHTML = jo.tc;
+			dojo.byId("due-count").innerHTML = jo.dc;
+			if(card_id != -1){
+				var wait = jo.timeDue - jo.serverTime;
+
+				wait = wait > 0 ? wait : 0
+				var nextCardDueDate = new Date(now+wait)
+				setupForNextCard(nextCardDueDate)
+				nextCardOrPause_timer=setTimeout(function(){
+					if(dojo.byId('show-uncover-button').checked){
+						showNewCardButton(jo.cardToShow)
+					}else{
+						showNewCard(jo.cardToShow)
+					}
+				},wait );
+			}else{
+				setupForNextCard(null)
+			}
+		}
 	});
 }
 
@@ -207,28 +208,20 @@ function nextCardOrPause(learnMore){
 		}
 	}
 
-	function markCardCorrect(){
-		_rescheduleCurrentCard(true)
-	}
-
-	function markCardWrong(){
-		_rescheduleCurrentCard(false)
-	}
-
-	function _rescheduleCurrentCard(bCorrect){
-
+	function rescheduleCurrentCard(iAnswer){
 		dojo.xhrGet({
 			url:"CardDealerServlet",
 			content:{
 				op:"reschedulecard",
 				deck_id:deckId,	
-				bCorrect:bCorrect,
-				timeShown:timeShownFront,
-				card_id:card_id
+				a:iAnswer,
+                av:0, //answer version, 
+				timeShownBack:timeShownBack,
+				card_id:card_id,
+				rt: responseTime
 			},
 			load:function(data){
 				nextCardOrPause();
-				
 			},
 			error:function(err){
 				alert('unable to reschedule: '+dojo.toJson(err))
@@ -262,7 +255,7 @@ Time Now:<span id="time-now"></span>
 Response Time: <span id="response-time">N/A</span>
 <br/>
 
-<span id="active-count">0</span>/<span id="total-count">0</span>
+<span id="active-count">0</span>/<span id="total-count">0</span>/<span id="due-count">0</span>
 
 <div id="show-card-button" style="display:none">
     <input type="button" value="Show Card" />
@@ -282,8 +275,9 @@ Response Time: <span id="response-time">N/A</span>
     </div>
     </div>
     <div style="margin:20px 0px">
-    <input type="button" value="Correct" onclick="markCardCorrect()"/>
-    <input type="button" value="Wrong" onclick="markCardWrong()"/>
+    <input type="button" value="No Clue" onclick="rescheduleCurrentCard(0)"/>
+    <input type="button" value="Close" onclick="rescheduleCurrentCard(1)"/>
+    <input type="button" value="Correct" onclick="rescheduleCurrentCard(2)"/>
     </div>
 </div>
 </center>

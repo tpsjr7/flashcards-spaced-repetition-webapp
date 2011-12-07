@@ -73,7 +73,6 @@ public class AutoCompleteServlet extends HttpServlet {
                 l.severe("Not processing: missing name paramer");
                 return;
             }
-            p("name is: " + name);
             
 
             long start = System.currentTimeMillis();
@@ -82,8 +81,6 @@ public class AutoCompleteServlet extends HttpServlet {
             name = name.replaceAll("_","\\\\_");
             
             List<NVP> sub = Database.listDecks(name ,  resultCount);
-            
-            p("subset time: "+(System.currentTimeMillis() - start));
             
             int startIndex = Integer.parseInt(startString);
             outputJSON(out,skipElements(startIndex, sub),resultCount);
