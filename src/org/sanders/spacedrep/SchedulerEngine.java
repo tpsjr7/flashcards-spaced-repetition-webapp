@@ -19,8 +19,8 @@ public class SchedulerEngine {
 	private static final float minimumEaseFactor = 1.3f;
 	public static final float defaultEaseFactor = 2.3f;
 	
-	private static final int instantInterval = 3000;
-	private static final int hesitationInterval = 8000;
+	private static final int instantInterval = 2500;
+	private static final int hesitationInterval = 6000;
 
 	private static final long minimumTimeBeforeAdjust = 5* 60 * 1000;
         
@@ -203,6 +203,9 @@ public class SchedulerEngine {
 				c.lastActualInterval = 0;
 			}else{
 				c.scheduledInterval = (long) ((double)actualInterval * c.easeFactor);
+				if(c.scheduledInterval == 0){
+					throw new RuntimeException("scheduledInterval was zero. ActualInterval: "+actualInterval+", easeFactor: "+c.easeFactor +", timeShownBack: "+timeShownBack+", lastTimeShownBack: "+c.lastTimeShownBack);
+				}
 				c.lastActualInterval = actualInterval;
 			}
 			c.timeDue = timeShownBack + c.scheduledInterval;
