@@ -13,7 +13,8 @@ import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 
 public class SchedulerEngine {
 	
-	private static final long initialInterval = 60000*5;
+	public static final long initialInterval = 10 * 1000; // 10 seconds
+	private static final long alreadyKnownInitialInterval = 10 * 60 * 1000;
 	
 	private static final float minimumEaseFactor = 1.3f;
 	public static final float defaultEaseFactor = 2.3f;
@@ -99,19 +100,21 @@ public class SchedulerEngine {
             if(answerVersion!=0){
                 throw new RuntimeException("Answer version "+answerVersion + " is not supported.");
             }
-            return answer == 2 ;
+			if( answer < 0 ||  answer  > 3 ){
+				throw new RuntimeException("Unsupported answer choice "+answer);
+
+			}
+            return answer == 2 || answer==3;
         }
         private float udpateEaseFactor(float oldFactor, int answerVersion, int answer, long responseTime, long lastActualInterval, long actualInterval, long lastTimeShownBack){
-            if(answerVersion!=0){
-                throw new RuntimeException("Answer version "+answerVersion + " is not supported.");
-            }
+
 
 			if(lastTimeShownBack==0){
 				System.out.println("card just activated, keeping ease factor: " + oldFactor);
 				return oldFactor;
 			}
 			
-			if(lastActualInterval < minimumTimeBeforeAdjust){
+			if(actualInterval < minimumTimeBeforeAdjust){
                 //dont start adjusting the ease factor until the card is at least 5 minutes old.
                 System.out.println("less than " + minimumTimeBeforeAdjust + " keeping ease factor " + oldFactor);
                 return oldFactor;
@@ -138,7 +141,7 @@ public class SchedulerEngine {
             }else  if(answer==1){
                 //wrong but familiar
                 newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .4f), minimumEaseFactor);
-            }else if(answer==2){
+            }else if(answer==2 || answer==3){
                 //corect, adjust based on response time
                 if(responseTime >= 0 && responseTime <= instantInterval){
                     newFactor = oldFactor + 0.1f;
@@ -155,7 +158,28 @@ public class SchedulerEngine {
             System.out.println("answer: "+ answer +", old factor:" + oldFactor +", effective factor: "+ effectiveFactor+ ", new factor:"+newFactor+", responseTime:" + responseTime +", time diff: "+actualInterval+", last interval: "+lastActualInterval );
             return newFactor;
         }
+/*
+	public static enum AnswerChoice{
+		Wrong, Close, Correct, AlreadyKnown
+	}
 
+	private AnswerChoice interpretAnswer(int answer, int answerVersion){
+		if(answerVersion!=0){
+			throw new RuntimeException("Answer version "+answerVersion + " is not supported.");
+        }
+		switch (answer){
+			case 0:
+				return AnswerChoice.Wrong;
+			case 1:
+				return AnswerChoice.Close;
+			case 2:
+				return AnswerChoice.Correct;
+			case 3:
+				return AnswerChoice.AlreadyKnown;
+			default:
+				throw new RuntimeException("Unsupported answer "+answer);
+		}
+	}*/
 	public void rescheduleCard(int deck_id, long timeShownBack,  int card_id, long responseTime, int answerVersion, int answer) throws SQLException {
 
 		Card c = Database.getCard(deck_id, card_id);
@@ -163,16 +187,26 @@ public class SchedulerEngine {
 		//TODO: think through if the card has been made inactive and has just
 		//been reactivated and shown, lastTimeTested should be set to 0
 		//so how will diff be used?
-
-		long actualInterval =  c.lastTimeShownBack == 0 ? initialInterval : timeShownBack -  c.lastTimeShownBack;
+		long actualInterval = timeShownBack -  c.lastTimeShownBack;
 		
         c.easeFactor = udpateEaseFactor(c.easeFactor, answerVersion, answer, responseTime,  c.lastActualInterval,actualInterval,  c.lastTimeShownBack);
 
 	    if(isCorrect(answerVersion, answer)){
-			c.scheduledInterval = (long) ((double)actualInterval * c.easeFactor);
+			if(c.lastTimeShownBack == 0){//user responded to just activated card
+				if(answer==2){//correct
+					c.scheduledInterval = initialInterval;
+				}else if(answer==3){//correct and already known card
+					c.scheduledInterval = alreadyKnownInitialInterval;
+				}else{
+					throw new RuntimeException("unknown correct answer type "+answer);
+				}
+				c.lastActualInterval = 0;
+			}else{
+				c.scheduledInterval = (long) ((double)actualInterval * c.easeFactor);
+				c.lastActualInterval = actualInterval;
+			}
 			c.timeDue = timeShownBack + c.scheduledInterval;
 			c.lastTimeShownBack = timeShownBack;
-			c.lastActualInterval = actualInterval;
 	    }else{
 	    	c.active = 0; //de activate to prefer reviewing known cards over relearning forgot cards and to prevent having too many missed cards
 	    	//causing it too hard to learn olds ones.

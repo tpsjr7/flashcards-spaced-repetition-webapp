@@ -41,11 +41,7 @@ public class DatabaseTest {
 		
 		SchedulerEngine se = new SchedulerEngine();
 		Database.CreateCardsParams ccp = new Database.CreateCardsParams();
-		ccp.active = 0 ;
 		ccp.deckID = deck_id;
-		ccp.interval = 0;
-		ccp.lastTimeTested = 0;
-		ccp.timeDue = 0;
 		
 		ArrayList<CardSides> sides = new ArrayList<CardSides>();
 		CardSides cs = new CardSides();

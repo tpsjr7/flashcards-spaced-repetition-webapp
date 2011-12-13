@@ -278,6 +278,7 @@ Response Time: <span id="response-time">N/A</span>
     <input type="button" value="No Clue" onclick="rescheduleCurrentCard(0)"/>
     <input type="button" value="Close" onclick="rescheduleCurrentCard(1)"/>
     <input type="button" value="Correct" onclick="rescheduleCurrentCard(2)"/>
+	<input type="button" value="Already Know" onclick="rescheduleCurrentCard(3)"/>
     </div>
 </div>
 </center>

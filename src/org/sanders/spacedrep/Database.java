@@ -435,7 +435,7 @@ public class Database {
 					ps.setString(2, cs.foreignWritten);
 					ps.setString(3, cs.pronunciation);
 					ps.setString(4, cs.translation);
-					ps.setLong(5, 0); //scheduled_interval
+					ps.setLong(5, SchedulerEngine.initialInterval); //scheduled_interval
 					ps.setLong(6,0);
 					ps.setLong(7, 0);
 					ps.setByte(8, (byte)0);
