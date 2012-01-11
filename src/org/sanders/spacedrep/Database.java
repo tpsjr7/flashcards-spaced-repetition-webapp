@@ -304,20 +304,25 @@ public class Database {
 	 * @return - id of the found card or -1 if there are no cards due
 	 * @throws SQLException
 	 */
-	public static int findMostOverdueCard(int deck_id) throws SQLException{
+	public static class CardTimeDue {
+		int card_id;
+		long time_due;
+	}
+	public static CardTimeDue findMostOverdueCard(int deck_id, long now) throws SQLException{
 		
 		Connection conn = cp.getConnection();
 		String sql;
 		
 		try{
-			sql = "select t1.id from ( select id, ( ? - timedue  ) / scheduled_interval as overdue_fraction " +
-					"from card where ? > timedue  and deck_id = ? and active=1 ) as t1 " +
-					"left outer join ( select id, ( ? - timedue  ) / scheduled_interval as overdue_fraction " +
-					"from card where ? > timedue  and deck_id = ? and active=1 ) as t2 " +
-					"on t1.OVERDUE_FRACTION <  t2.OVERDUE_FRACTION where t2.id is null; ";
+			sql = "select id, timedue from ( select ( select t1.id from ( " +
+				"select id, ( ? - timedue  ) / scheduled_interval as overdue_fraction " +
+				"from card where ? > timedue  and deck_id = ? and active=1 ) as t1 " +
+				"left outer join ( select id, ( ? - timedue  ) / scheduled_interval as overdue_fraction " +
+				"from card where ? > timedue  and deck_id = ? and active=1 ) as t2 " +
+				"on t1.OVERDUE_FRACTION <  t2.OVERDUE_FRACTION where t2.id is null limit 1 " +
+				") as cid, id, timedue from card ) as t1 where t1.cid = id ";
 					
 			PreparedStatement ps = conn.prepareStatement(sql);
-			long now = new Date().getTime();
 			ps.setLong(1, now);
 			ps.setLong(2, now);
 			ps.setInt(3, deck_id);
@@ -327,14 +332,21 @@ public class Database {
             
             ps.setMaxRows(1);
 			ResultSet rs = ps.executeQuery();
-			int ret;
+
+			int id;
+			long due;
 			if(rs.first()){
-				ret = rs.getInt(1);
+				id = rs.getInt("id");
+				due = rs.getLong("timedue");
 			}else{
-				ret = -1; // no over due cards
+				id = -1; // no over due cards
+				due = -1;
 			}
 			ps.close();
-			return ret;
+			CardTimeDue ctd = new CardTimeDue();
+			ctd.card_id = id;
+			ctd.time_due = due;
+			return ctd;
 		}finally{
 			conn.close();
 		}

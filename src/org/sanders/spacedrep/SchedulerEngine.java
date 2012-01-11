@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sanders.spacedrep.Database.Card;
+import org.sanders.spacedrep.Database.CardTimeDue;
 import org.sanders.spacedrep.Database.CreateCardsParams;
 import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 
@@ -20,9 +21,12 @@ public class SchedulerEngine {
 	public static final float defaultEaseFactor = 2.3f;
 	
 	private static final int instantInterval = 2500;
-	private static final int hesitationInterval = 6000;
+	private static final int hesitationInterval = 7000;
 
 	private static final long minimumTimeBeforeAdjust = 5* 60 * 1000;
+	private static final double actualIntervalWeight = 0.5;
+
+	private static final long freetimeBeforeNewCard = 15*1000 ; // minimum amount of time reqired before a card is due before allowing a new card to be learned
         
 	public void addCards(JSONObject params) throws JSONException, SQLException{
 		CreateCardsParams ccp = new CreateCardsParams();
@@ -64,18 +68,19 @@ public class SchedulerEngine {
      *  unless there is no card due, then it returns null.
 	 * @throws SQLException - If there are no cards in the deck
 	 */
+
 	public Card nextCardOrPause(int deck_id, boolean learnMore) throws SQLException{
-		int most_overdue = Database.findMostOverdueCard(deck_id);//find most percent overdue card ( time overdue / interval)
+		CardTimeDue most_overdue = Database.findMostOverdueCard(deck_id, System.currentTimeMillis() + freetimeBeforeNewCard );//find most percent overdue card ( time overdue / interval)
 		long now = new Date().getTime();
 		int cardTestingId = -1;
 		System.out.println("learnmore: " + learnMore);
-		if(most_overdue==-1){
+		if(most_overdue.card_id==-1){
 			//no overdue cards, so show new cards if available and the user is
 			//learning new cards.
             //if there are any more inactive cards, pick one to become active if learnMore is true.
 			int activateCard; 
 			//single '=' on purpose in this if statement.
-			if(learnMore && (activateCard = Database.selectCardToActivate(deck_id)) !=-1){
+			if(learnMore && (activateCard = Database.selectCardToActivate(deck_id)) !=-1 ){
 				//there are inactive cards, pick a new card to activate and learn
 				Database.activateCard(deck_id, activateCard, now);
 				cardTestingId = activateCard;
@@ -90,8 +95,8 @@ public class SchedulerEngine {
 			}
 		}else{
 			//Show the card that is most overdue
-			Database.activateCard(deck_id, most_overdue, now);
-			cardTestingId = most_overdue;
+			Database.activateCard(deck_id, most_overdue.card_id, most_overdue.time_due);
+			cardTestingId = most_overdue.card_id;
 		}
 		return Database.getCard(deck_id, cardTestingId);
 	}
@@ -188,8 +193,9 @@ public class SchedulerEngine {
 		//been reactivated and shown, lastTimeTested should be set to 0
 		//so how will diff be used?
 		long actualInterval = timeShownBack -  c.lastTimeShownBack;
-		
-        c.easeFactor = udpateEaseFactor(c.easeFactor, answerVersion, answer, responseTime,  c.lastActualInterval,actualInterval,  c.lastTimeShownBack);
+
+		float oldEaseFactor = c.easeFactor;
+		c.easeFactor = udpateEaseFactor(c.easeFactor, answerVersion, answer, responseTime,  c.lastActualInterval,actualInterval,  c.lastTimeShownBack);
 
 	    if(isCorrect(answerVersion, answer)){
 			if(c.lastTimeShownBack == 0){//user responded to just activated card
@@ -202,7 +208,16 @@ public class SchedulerEngine {
 				}
 				c.lastActualInterval = 0;
 			}else{
-				c.scheduledInterval = (long) ((double)actualInterval * c.easeFactor);
+				if(responseTime > hesitationInterval && c.easeFactor == oldEaseFactor){
+					//answer was correct, but was really slow to answer and the card was very overdue
+					//then schedule the card less than what it would be with the actual interval
+					//so the user should react faster next time
+					System.out.println("last scheduled interval: " + c.scheduledInterval);
+					double i = (1.0-actualIntervalWeight) * (double)c.scheduledInterval + actualIntervalWeight * (double)actualInterval;
+					c.scheduledInterval = (long)(i * c.easeFactor);
+				}else{
+					c.scheduledInterval = (long) ((double)actualInterval * c.easeFactor);
+				}
 				if(c.scheduledInterval == 0){
 					throw new RuntimeException("scheduledInterval was zero. ActualInterval: "+actualInterval+", easeFactor: "+c.easeFactor +", timeShownBack: "+timeShownBack+", lastTimeShownBack: "+c.lastTimeShownBack);
 				}
