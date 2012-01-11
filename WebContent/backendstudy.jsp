@@ -238,10 +238,12 @@ function nextCardOrPause(learnMore){
 
 </head>
 <body><center>
+		<!--
 Input words:<br/>
 <textarea value="hi" cols=30 rows=3 id="input-words"></textarea>
 <br/>
 <input type="button" value="Parse" onclick="parseInputWords()"/>
+  -->
 <!-- <input type="button" value="Load Config" onclick="reloadConfig()"/> -->
 
 <label for="show-uncover-button">Uncover button</label>
@@ -249,7 +251,10 @@ Input words:<br/>
 
 <label for="learn-more">Learn  More</label>
 <input type="checkbox" checked="yes" id="learn-more" onchange="nextCardOrPause()"/>
+
+<!--
 <input type="button" value="One More" onclick="nextCardOrPause(true)" />
+-->
 <br/>
 Card due: <span id="card-due">none</span> Now:<span id="time-now"></span>
 <br/>
