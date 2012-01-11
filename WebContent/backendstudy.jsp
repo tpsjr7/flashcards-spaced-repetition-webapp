@@ -1,6 +1,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+ <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">  
   <script type="text/javascript" src="js/datelib.js"></script>
   <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js"></script>
 <script type="text/javascript">
@@ -38,7 +39,7 @@ var responseTime; // time it takes for user to click show answer in milliseconds
 dojo.addOnLoad(function(){
 	loadDeckConfig(function(){
 		dojo.byId("current-word-front").style.fontSize=deckConfig.fontsize;
-		dojo.byId('current-word-front').value = ""
+		//dojo.byId('current-word-front').value = ""
 		setInterval(function(){
 			dojo.byId("time-now").innerHTML=new Date().toString("h:mm:ss")
 		},1000)
@@ -56,8 +57,10 @@ function showNewCardButton(card){
 }
 
 function showNewCard(card){
+	dojo.byId('show-card-button').style.display="none";
     dojo.byId('current-card').style.display="block"
-    dojo.byId('current-word-front').value = card.front
+	dojo.byId('show-answer-button').style.display="inline";
+    dojo.byId('current-word-front').innerHTML = card.front
     timeShownFront=new Date().getTime() + serverTimeOffset
     currentCard = card
 }
@@ -93,7 +96,7 @@ function addCards(/* json array */ cards, callback,errorcallback){
 function setupForNextCard(nextCardDueDate){
     dojo.byId('show-card-button').style.display="none"
     dojo.byId('answer-div').style.display="none"
-    dojo.byId('current-word-front').value = ""
+    dojo.byId('current-word-front').innerHTML = ""
     dojo.byId('current-card').style.display="none"
     dojo.byId('card-due').innerHTML = nextCardDueDate == null ? "(none)" :  nextCardDueDate.toString("h:mm:ss")
 }
@@ -102,8 +105,9 @@ function showAnswer(){
 	timeShownBack = new Date().getTime() + serverTimeOffset
 	responseTime =  timeShownBack  - timeShownFront
     dojo.byId("response-time").innerHTML = responseTime /1000;
-    dojo.byId('answer-div').style.display="block"
-    dojo.byId('answer-span').innerHTML=currentCard.back
+    dojo.byId('answer-div').style.display="block";
+    dojo.byId('answer-span').innerHTML=currentCard.back;
+	dojo.byId('show-answer-button').style.display="none";
 }
 
 /**
@@ -238,7 +242,7 @@ Input words:<br/>
 <textarea value="hi" cols=30 rows=3 id="input-words"></textarea>
 <br/>
 <input type="button" value="Parse" onclick="parseInputWords()"/>
-<input type="button" value="Load Config" onclick="reloadConfig()"/>
+<!-- <input type="button" value="Load Config" onclick="reloadConfig()"/> -->
 
 <label for="show-uncover-button">Uncover button</label>
 <input type="checkbox" checked="no" id="show-uncover-button" />
@@ -247,9 +251,7 @@ Input words:<br/>
 <input type="checkbox" checked="yes" id="learn-more" onchange="nextCardOrPause()"/>
 <input type="button" value="One More" onclick="nextCardOrPause(true)" />
 <br/>
-Next card due: <span id="card-due">none</span>
-<br/>
-Time Now:<span id="time-now"></span>
+Card due: <span id="card-due">none</span> Now:<span id="time-now"></span>
 <br/>
 
 Response Time: <span id="response-time">N/A</span>
@@ -262,15 +264,17 @@ Response Time: <span id="response-time">N/A</span>
 </div>
 
 <div id="current-card" style="display:none">
-    Current card:<br/>
-    <textarea cols=10 rows=2 id="current-word-front"></textarea>
-    <br/>
-    <input type="button" value="Show answer" onclick="showAnswer()"/>
+    <!-- Current card:<br/> -->
+	<div style="margin:8px">
+		<span id="current-word-front"  style="border: solid black 1px;padding: 7px; " ></span>
+	</div>
+    
+    <input type="button" value="Show answer" id="show-answer-button" onclick="showAnswer()"/>
 </div>
 
 <div id="answer-div" style="display:none">
     <div>
-    <div id="answer-span" style="border: solid black 1px;padding: 10px; margin:10px">
+    <div id="answer-span" style="border: solid black 1px;padding: 10px; margin:5px">
     The answer
     </div>
     </div>
