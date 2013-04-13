@@ -1,9 +1,9 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
- <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">  
+ <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=2.0;">
   <script type="text/javascript" src="js/datelib.js"></script>
-  <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js"></script>
+  <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
 <script type="text/javascript">
 /*
 {
@@ -94,10 +94,7 @@ function addCards(/* json array */ cards, callback,errorcallback){
 }
 
 function setupForNextCard(nextCardDueDate){
-    dojo.byId('show-card-button').style.display="none"
-    dojo.byId('answer-div').style.display="none"
-    dojo.byId('current-word-front').innerHTML = ""
-    dojo.byId('current-card').style.display="none"
+
     dojo.byId('card-due').innerHTML = nextCardDueDate == null ? "(none)" :  nextCardDueDate.toString("h:mm:ss")
 }
 
@@ -213,6 +210,10 @@ function nextCardOrPause(learnMore){
 	}
 
 	function rescheduleCurrentCard(iAnswer){
+		dojo.byId('answer-div').style.display="none"
+		dojo.byId('show-card-button').style.display="none"
+		dojo.byId('current-word-front').innerHTML = ""
+		dojo.byId('current-card').style.display="none"
 		dojo.xhrGet({
 			url:"CardDealerServlet",
 			content:{
@@ -238,12 +239,10 @@ function nextCardOrPause(learnMore){
 
 </head>
 <body><center>
-		<!--
 Input words:<br/>
 <textarea value="hi" cols=30 rows=3 id="input-words"></textarea>
 <br/>
 <input type="button" value="Parse" onclick="parseInputWords()"/>
-  -->
 <!-- <input type="button" value="Load Config" onclick="reloadConfig()"/> -->
 
 <label for="show-uncover-button">Uncover button</label>
@@ -264,30 +263,33 @@ Response Time: <span id="response-time">N/A</span>
 
 <span id="active-count">0</span>/<span id="total-count">0</span>/<span id="due-count">0</span>
 
+<hr/>
+
 <div id="show-card-button" style="display:none">
     <input type="button" value="Show Card" />
 </div>
 
 <div id="current-card" style="display:none">
     <!-- Current card:<br/> -->
-	<div style="margin:8px">
-		<span id="current-word-front"  style="border: solid black 1px;padding: 7px; " ></span>
+	<div style="margin:15px">
+		<!--<span id="current-word-front"  style="border: solid black 1px;padding: 10px; " ></span> -->
+		<span id="current-word-front"  style="padding: 10px; " ></span>
 	</div>
     
     <input type="button" value="Show answer" id="show-answer-button" onclick="showAnswer()"/>
 </div>
 
 <div id="answer-div" style="display:none">
-    <div>
-    <div id="answer-span" style="border: solid black 1px;padding: 10px; margin:5px">
-    The answer
-    </div>
-    </div>
     <div style="margin:20px 0px">
     <input type="button" value="No Clue" onclick="rescheduleCurrentCard(0)"/>
     <input type="button" value="Close" onclick="rescheduleCurrentCard(1)"/>
     <input type="button" value="Correct" onclick="rescheduleCurrentCard(2)"/>
 	<input type="button" value="Already Know" onclick="rescheduleCurrentCard(3)"/>
+    </div>
+    <div>
+    <div id="answer-span" style="border: solid black 1px;padding: 10px; margin:5px">
+    The answer
+    </div>
     </div>
 </div>
 </center>

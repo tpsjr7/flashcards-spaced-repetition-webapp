@@ -3,11 +3,11 @@
     <display-name>SpacedRepServer</display-name>
     <servlet>
         <description>
-		</description>
+        </description>
         <display-name>CreateDeck</display-name>
         <servlet-name>CreateDeck</servlet-name>
         <servlet-class>
-		org.sanders.spacedrep.CreateDeck</servlet-class>
+            org.sanders.spacedrep.CreateDeck</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>RemoveDeck</servlet-name>
@@ -19,19 +19,19 @@
     </servlet-mapping>
     <servlet>
         <description>
-		</description>
+        </description>
         <display-name>AutoCompleteServlet</display-name>
         <servlet-name>AutoCompleteServlet</servlet-name>
         <servlet-class>
-		org.sanders.spacedrep.AutoCompleteServlet</servlet-class>
+            org.sanders.spacedrep.AutoCompleteServlet</servlet-class>
     </servlet>
     <servlet>
         <description>
-		</description>
+        </description>
         <display-name>CardDealerServlet</display-name>
         <servlet-name>CardDealerServlet</servlet-name>
         <servlet-class>
-		org.sanders.spacedrep.CardDealerServlet</servlet-class>
+            org.sanders.spacedrep.CardDealerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AutoCompleteServlet</servlet-name>

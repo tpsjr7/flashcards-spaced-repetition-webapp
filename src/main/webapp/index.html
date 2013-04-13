@@ -1,10 +1,11 @@
 <html>
 <head>
-<script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true" ></script>
+<script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
+<script type="text/javascript" src="js/dojo-release-1.5.0/dijit/dijit.js" djConfig="parseOnLoad: true"></script>
 
-<script type="text/javascript" src="js/dojo-release-1.5.0/dijit/dijit.js"></script>
+
 <style type="text/css">
-@import "js/dojo-release-1.5.0/dijit/themes/tundra/tundra.css" ;
+@import "//ajax.googleapis.com/ajax/libs/dojo/1.5.0/dijit/themes/tundra/tundra.css" ;
 
 </style>
 
@@ -12,9 +13,6 @@
 dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojo.parser");  // scan page for widgets and instantiate them
 dojo.require("dojox.data.QueryReadStore");
-dojo.addOnLoad(function(){
-	console.log("hello");
-});
 </script>     
 
 <script>

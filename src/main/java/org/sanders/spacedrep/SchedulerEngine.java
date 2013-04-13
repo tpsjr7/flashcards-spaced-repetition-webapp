@@ -14,19 +14,20 @@ import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 
 public class SchedulerEngine {
 	
-	public static final long initialInterval = 10 * 1000; // 10 seconds
+	public static final long initialInterval = 20 * 1000; // 10 seconds
 	private static final long alreadyKnownInitialInterval = 10 * 60 * 1000;
 	
 	private static final float minimumEaseFactor = 1.3f;
 	public static final float defaultEaseFactor = 2.3f;
 	
-	private static final int instantInterval = 2500;
-	private static final int hesitationInterval = 7000;
+	private static final int instantInterval = 3000;
+	private static final int hesitationInterval = 9000;
 
 	private static final long minimumTimeBeforeAdjust = 5* 60 * 1000;
 	private static final double actualIntervalWeight = 0.5;
 
-	private static final long freetimeBeforeNewCard = 15*1000 ; // minimum amount of time reqired before a card is due before allowing a new card to be learned
+	//private static final long freetimeBeforeNewCard = 15*1000 ; // minimum amount of time reqired before a card is due before allowing a new card to be learned
+	private static final long freetimeBeforeNewCard = 0*1000 ; // minimum amount of time reqired before a card is due before allowing a new card to be learned
         
 	public void addCards(JSONObject params) throws JSONException, SQLException{
 		CreateCardsParams ccp = new CreateCardsParams();
@@ -217,6 +218,9 @@ public class SchedulerEngine {
 					c.scheduledInterval = (long)(i * c.easeFactor);
 				}else{
 					c.scheduledInterval = (long) ((double)actualInterval * c.easeFactor);
+				}
+				if(answer==3){ //already known, make sure interval is at least alreadyKnownInitialInterval
+				    c.scheduledInterval = Math.max(c.scheduledInterval, alreadyKnownInitialInterval);
 				}
 				if(c.scheduledInterval == 0){
 					throw new RuntimeException("scheduledInterval was zero. ActualInterval: "+actualInterval+", easeFactor: "+c.easeFactor +", timeShownBack: "+timeShownBack+", lastTimeShownBack: "+c.lastTimeShownBack);
