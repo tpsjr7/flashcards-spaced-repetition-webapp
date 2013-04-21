@@ -30,26 +30,30 @@ import org.sanders.spacedrep.Database.NVP;
 public class AutoCompleteServlet extends HttpServlet {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 2837949475656820229L;
-	static Logger l = Logger.getLogger(AutoCompleteServlet.class.getName());
+     *
+     */
+    private static final long serialVersionUID = 2837949475656820229L;
+    static Logger l = Logger.getLogger(AutoCompleteServlet.class.getName());
 
-    static void p(String mess){ 
+    static void p(String mess) {
         l.info(mess);
     }
 
     @Override
-    public void destroy(){
-    	Database.destroy();
+    public void destroy() {
+        Database.destroy();
     }
-    
+
     @Override
-    public void init(){
-    	Database.init();
+    public void init() {
+        Database.init();
     }
+
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+     * Processes requests for both HTTP
+     * <code>GET</code> and
+     * <code>POST</code> methods.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -67,27 +71,27 @@ public class AutoCompleteServlet extends HttpServlet {
             }
             String countString = request.getParameter("count");
 
-            
+
             String name = request.getParameter("name");
             if (name == null) {
                 l.severe("Not processing: missing name paramer");
                 return;
             }
-            
+
 
             long start = System.currentTimeMillis();
-            int resultCount = countString==null ? Integer.MAX_VALUE :  Integer.parseInt(countString);
+            int resultCount = countString == null ? Integer.MAX_VALUE : Integer.parseInt(countString);
             name = name.replace("*", "");
-            name = name.replaceAll("_","\\\\_");
-            
-            List<NVP> sub = Database.listDecks(name ,  resultCount);
-            
+            name = name.replaceAll("_", "\\\\_");
+
+            List<NVP> sub = Database.listDecks(name, resultCount);
+
             int startIndex = Integer.parseInt(startString);
-            outputJSON(out,skipElements(startIndex, sub),resultCount);
+            outputJSON(out, skipElements(startIndex, sub), resultCount);
 
         } catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
+            e.printStackTrace();
+        } finally {
             out.close();
         }
     }
@@ -107,7 +111,9 @@ public class AutoCompleteServlet extends HttpServlet {
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
 
     /**
-     * Handles the HTTP <code>GET</code> method.
+     * Handles the HTTP
+     * <code>GET</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -123,8 +129,10 @@ public class AutoCompleteServlet extends HttpServlet {
         }
     }
 
-    /** 
-     * Handles the HTTP <code>POST</code> method.
+    /**
+     * Handles the HTTP
+     * <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -140,8 +148,9 @@ public class AutoCompleteServlet extends HttpServlet {
         }
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override
@@ -149,15 +158,15 @@ public class AutoCompleteServlet extends HttpServlet {
         return "Provides the datasource for the autocomplete dojo drop down.";
     }// </editor-fold>
 
-    private void outputJSON( PrintWriter out,Iterator<NVP> it, int count) throws JSONException {
+    private void outputJSON(PrintWriter out, Iterator<NVP> it, int count) throws JSONException {
         JSONObject jo;
         JSONArray ja = new JSONArray();
 
         NVP item;
-        
-        for(int i = 0 ; i < count ; i++){
-            if(!it.hasNext()){
-               break;
+
+        for (int i = 0; i < count; i++) {
+            if (!it.hasNext()) {
+                break;
             }
             item = it.next();
             jo = new JSONObject();
