@@ -14,16 +14,17 @@ import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 
 public class SchedulerEngine {
 
-    public static final long initialInterval = 20 * 1000; // 10 seconds
-    private static final long alreadyKnownInitialInterval = 10 * 60 * 1000;
-    private static final float minimumEaseFactor = 1.3f;
-    public static final float defaultEaseFactor = 2.3f;
-    private static final int instantInterval = 3000;
-    private static final int hesitationInterval = 9000;
-    private static final long minimumTimeBeforeAdjust = 5 * 60 * 1000;
-    private static final double actualIntervalWeight = 0.5;
-    //private static final long freetimeBeforeNewCard = 15*1000 ; // minimum amount of time reqired before a card is due before allowing a new card to be learned
-    private static final long freetimeBeforeNewCard = 0 * 1000; // minimum amount of time reqired before a card is due before allowing a new card to be learned
+    public static final long     initialInterval              = 20 * 1000; // 10 seconds
+    private static final long    alreadyKnownInitialInterval  = 12 * 60 * 60 * 1000; // 12 hours
+    private static final float   minimumEaseFactor            = 1.3f;
+    public static final float    defaultEaseFactor            = 2.3f;
+    private static final int     instantInterval              = 3000;
+    private static final int     hesitationInterval           = 9000;
+    private static final long    minimumTimeBeforeAdjust      = 12 * 60 * 60 * 1000; // 12 hours
+    private static final double  actualIntervalWeight         = 0.5;
+    private static final long    freetimeBeforeNewCard        = 0 * 1000; // minimum amount of time reqired before a card is due before allowing a new card to be learned
+    //private static final long    actualIntervalSkipToDay      = 20 * 60 * 1000; // if the actual interval was at least 20 minutes, then make sure it gets rescheduled to at least a day
+    private static final boolean useEffectiveFactorIfCorrect = true; // if was way overdue and was correct, then update easefactor taking into account that long interval 
 
     public void addCards(JSONObject params) throws JSONException, SQLException {
         CreateCardsParams ccp = new CreateCardsParams();
@@ -131,25 +132,30 @@ public class SchedulerEngine {
         //more than 8 seconds serious difficulty -.15
         float effectiveFactor = lastActualInterval == 0 ? oldFactor : (float) actualInterval / (float) lastActualInterval; //old decks may not have a lastActualInterval and will be 0, so just use the oldFactor
 
-        //effective ease factor is the ease factor it would have been considering how much time it was over due
-
-        //if it was way past due and it was missed, then calculate the minimum of the old factor vs the effective factor minus correction
+        // Effective ease factor is the ease factor it would have been considering how much time it was over due.
+        // If it was way past due and it was missed, then calculate the minimum of the old factor vs the effective factor minus correction
 
         float newFactor;
 
-        if (answer == 0) {
-            //wrong, had no clue
-            newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .8f), minimumEaseFactor);
+        if (answer == 0) { //wrong, had no clue
+            // New factor should be at least minimumEaseFactor.
+            // If reviewing when way overdate, then the present effectiveFactor could be 
+            // very large like 10. And so 10 - .8 would be very large so take the old factor instead.
+            // But if it was reviewed when due, so that oldFactor == effectiveFactor then
+            // it will take off 0.8.
+            newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .8f), minimumEaseFactor); 
         } else if (answer == 1) {
             //wrong but familiar
             newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .4f), minimumEaseFactor);
         } else if (answer == 2 || answer == 3) {
             //corect, adjust based on response time
             if (responseTime >= 0 && responseTime <= instantInterval) {
-                newFactor = oldFactor + 0.1f;
+                newFactor = (useEffectiveFactorIfCorrect ? effectiveFactor : oldFactor) + 0.1f;
             } else if (responseTime > instantInterval && responseTime <= hesitationInterval) {
-                newFactor = oldFactor;
+                // Didn't respond too fast or too slow, so the ease factor stays the same
+                newFactor = useEffectiveFactorIfCorrect ? effectiveFactor : oldFactor;
             } else if (responseTime > hesitationInterval) {
+                // Took too long to respond. Decrease ease factor a little but not less than the minimum.
                 newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .15f), minimumEaseFactor);
             } else {
                 throw new RuntimeException("invalid response time " + responseTime);
@@ -226,7 +232,7 @@ public class SchedulerEngine {
             }
             c.timeDue = timeShownBack + c.scheduledInterval;
             c.lastTimeShownBack = timeShownBack;
-        } else {
+        } else { // wrong answer
             c.active = 0; //de activate to prefer reviewing known cards over relearning forgot cards and to prevent having too many missed cards
             //causing it too hard to learn olds ones.
             c.scheduledInterval = initialInterval;

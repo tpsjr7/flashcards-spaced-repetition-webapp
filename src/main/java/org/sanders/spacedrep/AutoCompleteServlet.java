@@ -33,7 +33,7 @@ public class AutoCompleteServlet extends HttpServlet {
      *
      */
     private static final long serialVersionUID = 2837949475656820229L;
-    static Logger l = Logger.getLogger(AutoCompleteServlet.class.getName());
+    static final Logger l = Logger.getLogger(AutoCompleteServlet.class.getName());
 
     static void p(String mess) {
         l.info(mess);
@@ -79,7 +79,6 @@ public class AutoCompleteServlet extends HttpServlet {
             }
 
 
-            long start = System.currentTimeMillis();
             int resultCount = countString == null ? Integer.MAX_VALUE : Integer.parseInt(countString);
             name = name.replace("*", "");
             name = name.replaceAll("_", "\\\\_");
