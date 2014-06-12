@@ -150,10 +150,10 @@ public class SchedulerEngine {
         } else if (answer == 2 || answer == 3) {
             //corect, adjust based on response time
             if (responseTime >= 0 && responseTime <= instantInterval) {
-                newFactor = (useEffectiveFactorIfCorrect ? effectiveFactor : oldFactor) + 0.1f;
+                newFactor = oldFactor + 0.1f; // dont use effective factor here, what if it was x10?
             } else if (responseTime > instantInterval && responseTime <= hesitationInterval) {
                 // Didn't respond too fast or too slow, so the ease factor stays the same
-                newFactor = useEffectiveFactorIfCorrect ? effectiveFactor : oldFactor;
+                newFactor = oldFactor; // dont use effective factor here, what if it was x10?
             } else if (responseTime > hesitationInterval) {
                 // Took too long to respond. Decrease ease factor a little but not less than the minimum.
                 newFactor = Math.max(Math.min(oldFactor, effectiveFactor - .15f), minimumEaseFactor);
@@ -163,7 +163,7 @@ public class SchedulerEngine {
         } else {
             throw new RuntimeException("invalid answer " + answer + " for answer version " + answerVersion);
         }
-        System.out.println("answer: " + answer + ", old factor:" + oldFactor + ", effective factor: " + effectiveFactor + ", new factor:" + newFactor + ", responseTime:" + responseTime + ", time diff: " + actualInterval + ", last interval: " + lastActualInterval);
+        //System.out.println("answer: " + answer + ", old factor:" + oldFactor + ", effective factor: " + effectiveFactor + ", new factor:" + newFactor + ", responseTime:" + responseTime + ", time diff: " + actualInterval + ", last interval: " + lastActualInterval);
         return newFactor;
     }
     /*
@@ -213,12 +213,12 @@ public class SchedulerEngine {
                 c.lastActualInterval = 0;
             } else {
                 if (responseTime > hesitationInterval && c.easeFactor == oldEaseFactor) {
-                    //answer was correct, but was really slow to answer and the card was very overdue
-                    //then schedule the card less than what it would be with the actual interval
-                    //so the user should react faster next time
-                    System.out.println("last scheduled interval: " + c.scheduledInterval);
-                    double i = (1.0 - actualIntervalWeight) * (double) c.scheduledInterval + actualIntervalWeight * (double) actualInterval;
-                    c.scheduledInterval = (long) (i * c.easeFactor);
+                    // The answer was correct, but was really slow to answer and the card was very overdue
+                     // then schedule the card less than what it would be with the actual interval
+                     // so the user should react faster next time
+                     System.out.println("last scheduled interval: " + c.scheduledInterval);
+                     double weightedInterval = (1.0 - actualIntervalWeight) * (double) c.scheduledInterval + actualIntervalWeight * (double) actualInterval;
+                     c.scheduledInterval = (long) (weightedInterval * c.easeFactor);
                 } else {
                     c.scheduledInterval = (long) ((double) actualInterval * c.easeFactor);
                 }
