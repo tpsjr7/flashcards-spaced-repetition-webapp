@@ -6,4 +6,4 @@ Use Hibernate
 Use a logger instead of System.out
 Add prettier graphics
 Add more junits
-Use maven for jar dependencies
+Use config file for interval constants
