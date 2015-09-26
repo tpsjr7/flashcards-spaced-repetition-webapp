@@ -1,5 +1,6 @@
 package org.sanders.spacedrep;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,8 +30,18 @@ public class Database {
             return;
         }
 
+        String dbPath = "";
+
+        if(new File("/home/bitnami/aws").exists()){
+            dbPath = "flashcards";
+        } else if(new File("/Users/tedsandersjr/Dropbox/sr_db/srs_backup").exists()){
+            dbPath = "/Users/tedsandersjr/Dropbox/sr_db/srs_backup/testdb";
+        } else {
+            dbPath = "flashcards";
+        }
+
         try {
-            cp = JdbcConnectionPool.create("jdbc:h2:/home/tpsjr7/workspace/SpacedRepServer/testdb/testdb", "sa", "sa");
+            cp = JdbcConnectionPool.create("jdbc:h2:" + dbPath, "sa", "sa");
             setupDb();
             initialized = true;
         } catch (SQLException e) {
