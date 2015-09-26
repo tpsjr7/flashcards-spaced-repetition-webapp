@@ -25,6 +25,9 @@
         <module name="SpacedRepetition" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="SpacedRepetition" target="1.6" />
+    </bytecodeTargetLevel>
   </component>
 </project>
 
