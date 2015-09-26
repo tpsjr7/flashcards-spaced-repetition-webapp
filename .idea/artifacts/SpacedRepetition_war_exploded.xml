@@ -1,0 +1,17 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="SpacedRepetition:war exploded">
+    <output-path>$PROJECT_DIR$/target/SpacedRepetition</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="SpacedRepetition/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="SpacedRepetition" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: org.json:json:20090211" />
+          <element id="library" level="project" name="Maven: com.h2database:h2:1.1.115" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
