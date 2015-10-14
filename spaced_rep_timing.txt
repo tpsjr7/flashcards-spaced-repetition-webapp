@@ -1,0 +1,18 @@
+0-3 instant
+3-8 with hesitation
+8- with trouble
+
+
+
+0	-0.80	-0.80	blank out
+1	-0.54	-0.54	 incorrect response; the correct one remembered
+2	-0.32	-0.32	 incorrect response; where the correct one seemed easy to recall
+3	-0.14	-0.14	 correct response recalled with serious difficulty
+4	0.00	0.00	correct response after a hesitation
+5	0.10	0.10	 perfect response
+
+no clue, wrong but familiar, close, correct
+
+NC
+WBF
+
