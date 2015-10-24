@@ -43,7 +43,7 @@ public class Database {
         }
 
         try {
-            cp = JdbcConnectionPool.create("jdbc:h2:" + dbPath, "sa", "sa");
+            cp = JdbcConnectionPool.create("jdbc:h2:" + dbPath + ";AUTO_SERVER=TRUE", "sa", "sa");
             setupDb();
             initialized = true;
         } catch (SQLException e) {
