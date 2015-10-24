@@ -29,7 +29,7 @@ tripletLoad : true
 <script type="text/javascript"  >
 
 var deckConfig;
-var deckId= <%= request.getParameter("deck_id") %>;
+var deckId = ${params.deck_id};
 var currentCard = null
 var card_id = null
 var serverTimeOffset = 0 //how much the server time differs from this computer's local time

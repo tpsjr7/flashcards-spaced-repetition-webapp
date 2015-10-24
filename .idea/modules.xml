@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SpacedRepetition.iml" filepath="$PROJECT_DIR$/SpacedRepetition.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SpacedRepServer.iml" filepath="$PROJECT_DIR$/SpacedRepServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SpacedRepServer-grailsPlugins.iml" filepath="$PROJECT_DIR$/SpacedRepServer-grailsPlugins.iml" />
     </modules>
   </component>
 </project>

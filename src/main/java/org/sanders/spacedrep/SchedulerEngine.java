@@ -14,19 +14,7 @@ import org.sanders.spacedrep.Database.CreateCardsParams.CardSides;
 
 public class SchedulerEngine {
 
-    public static final long     initialInterval              = 20 * 1000; // 10 seconds
-    private static final long    alreadyKnownInitialInterval  = 12 * 60 * 60 * 1000; // 12 hours
-    private static final float   minimumEaseFactor            = 1.3f;
-    public static final float    defaultEaseFactor            = 2.3f;
-    private static final int     instantInterval              = 3000;
-    private static final int     hesitationInterval           = 9000;
-    private static final long    minimumTimeBeforeAdjust      = 12 * 60 * 60 * 1000; // 12 hours
-    private static final double  actualIntervalWeight         = 0.5;
-    private static final long    freetimeBeforeNewCard        = 0 * 1000; // minimum amount of time reqired before a card is due before allowing a new card to be learned
-    //private static final long    actualIntervalSkipToDay      = 20 * 60 * 1000; // if the actual interval was at least 20 minutes, then make sure it gets rescheduled to at least a day
-    private static final boolean useEffectiveFactorIfCorrect = true; // if was way overdue and was correct, then update easefactor taking into account that long interval 
-
-    public void addCards(JSONObject params) throws JSONException, SQLException {
+     public void addCards(JSONObject params) throws JSONException, SQLException {
         CreateCardsParams ccp = new CreateCardsParams();
         ccp.cards = new ArrayList<CardSides>();
         ccp.deckID = params.getInt("deckId");
