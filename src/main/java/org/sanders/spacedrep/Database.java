@@ -37,7 +37,7 @@ public class Database {
         } else if(new File("/Users/tedsandersjr/Dropbox/sr_db/srs_backup").exists()){
             dbPath = "/Users/tedsandersjr/Dropbox/sr_db/srs_backup/testdb";
         } else if(new File(System.getenv("OPENSHIFT_DATA_DIR") +  "db").exists()){
-            dbPath = System.getenv("OPENSHIFT_DATA_DIR") +  "db";
+            dbPath = System.getenv("OPENSHIFT_DATA_DIR") +  "db/testdb";
         }else {
             dbPath = "flashcards";
         }
