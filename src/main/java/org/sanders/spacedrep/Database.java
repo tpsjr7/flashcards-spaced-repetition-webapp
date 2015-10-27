@@ -36,12 +36,13 @@ public class Database {
             dbPath = "flashcards";
         } else if(new File("/Users/tedsandersjr/Dropbox/sr_db/srs_backup").exists()){
             dbPath = "/Users/tedsandersjr/Dropbox/sr_db/srs_backup/testdb";
-        } else if(new File("/var/lib/openshift/5606c2902d5271babb000098/jbossews/db").exists()){
-            dbPath = "/var/lib/openshift/5606c2902d5271babb000098/jbossews/db/testdb";
+        } else if(new File(System.getenv("OPENSHIFT_DATA_DIR") +  "db").exists()){
+            dbPath = System.getenv("OPENSHIFT_DATA_DIR") +  "db/testdb";
         }else {
             dbPath = "flashcards";
         }
 
+        System.out.println("Using db path: " + dbPath);
         try {
             cp = JdbcConnectionPool.create("jdbc:h2:" + dbPath, "sa", "sa");
             setupDb();
