@@ -1,0 +1,94 @@
+<html>
+<head>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/dojo/1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/dojo/1.5.0/dijit/dijit.js" djConfig="parseOnLoad: true"></script>
+
+<style type="text/css">
+@import "//ajax.googleapis.com/ajax/libs/dojo/1.5.0/dijit/themes/tundra/tundra.css" ;
+
+</style>
+
+<script type="text/javascript">
+dojo.require("dijit.form.FilteringSelect");
+dojo.require("dojo.parser");  // scan page for widgets and instantiate them
+dojo.require("dojox.data.QueryReadStore");
+</script>     
+
+<script>
+function createDeck(){
+	var name = dojo.byId('deck-name').value
+	dojo.xhrPost({
+		url:"CreateDeck",
+		content:{"deck-name":name},
+		error: function(err){
+			dojo.byId("status-div").innerHTML=dojo.toJson(err)
+		},
+		load: function(data){
+			dojo.byId("status-div").innerHTML=dojo.fromJson(data).status
+			dojo.attr(deckSelect, "displayedValue", name);
+		}
+		
+	});
+	dojo.byId("status-div").innerHTML="Creating deck ..."
+}
+
+function openDeck(){
+
+	if(!deckSelect.isValid()){
+		alert("Select a valid deck first.");
+		return;
+	}
+	document.location="backendstudy.gsp?deck_id=" + thestore.getValue(deckSelect.item,'id')
+	
+}
+
+function removeDeck(){
+	if(!deckSelect.isValid()){
+		alert("Select a valid deck first.");
+		return;
+	}
+	var resp = prompt("Remove deck? (type yes to remove)");
+	
+	if(resp!="yes"){
+		alert("Did not remove deck.")
+		return;
+	}
+	var name = thestore.getValue(deckSelect.item,'name')
+	dojo.xhrPost({
+		url:"RemoveDeck",
+		content:{"deck_id":thestore.getValue(deckSelect.item,'id') },
+		error: function(err){
+			dojo.byId("status-div").innerHTML=dojo.toJson(err)
+		},
+		load: function(data){
+			dojo.byId("status-div").innerHTML = dojo.fromJson(data).status + ' ' + name
+			dojo.attr(deckSelect, "displayedValue", "")
+		}
+
+	});
+}
+</script>
+   
+</head>
+<body class="tundra">
+<span dojoType="dojox.data.QueryReadStore" jsId="thestore"
+	url="AutoComplete" requestMethod="post"></span>
+	
+<span>Decks:</span>
+
+<select dojoType="dijit.form.FilteringSelect" jsId="deckSelect"
+	name="state1" autoComplete="true" invalidMessage="Invalid deck name"
+	store=thestore pageSize=20 ></select>
+	
+<input type="button" value="Open" onclick="openDeck()"/>
+<input type="button" value="Remove" onclick="removeDeck()"/>
+
+<div>
+Create deck:
+<input type="text" width="60px" id="deck-name" />
+<input type="button" value="Create" onclick="createDeck()"/>	
+</div>
+
+<pre id="status-div"></pre>
+</body>
+</html>
