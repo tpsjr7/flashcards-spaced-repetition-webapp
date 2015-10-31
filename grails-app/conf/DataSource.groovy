@@ -31,13 +31,7 @@ environments {
     production {
         dataSource {
 
-            String dir = System.getenv("OPENSHIFT_DATA_DIR") +  "db"
-            String dbPath
-            if(new File(dir).exists()){
-                dbPath = "${dir}/testdb";
-            } else {
-                throw new Exception("Could not find database under ${dir}")
-            }
+            String dbPath = System.getenv("OPENSHIFT_DATA_DIR") +  "db/testdb"
 
             dbCreate = "validate"
             url = "jdbc:h2:${dbPath};MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE"

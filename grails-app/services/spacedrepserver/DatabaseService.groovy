@@ -6,6 +6,7 @@ import grails.transaction.Transactional
 class DatabaseService {
 
     def removeDeck(Deck deck) {
+        Card.findAllByDeck(deck)*.delete()
         deck.delete()
     }
 

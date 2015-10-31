@@ -28,13 +28,13 @@ class CardDealerController {
             Map cc = schedulerEngineService.countActiveCards(deck);
 
             def out = [
-                    "serverTime": new Date().time,
-                    "ac": cc.activeCards,
-                    "tc": cc.totalCards,
-                    "dc": cc.dueCards
+                    card_id: -1,
+                    serverTime: System.currentTimeMillis(),
+                    ac: cc.activeCards,
+                    tc: cc.totalCards,
+                    dc: cc.dueCards
             ]
 
-            out.card_id = -1
             if(c){
                 out.cardToShow = [
                         front: c.foreignWritten,
