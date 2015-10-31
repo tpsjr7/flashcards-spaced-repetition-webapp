@@ -1,14 +1,13 @@
-package flashcards
+package spacedrepserver
 
 import grails.test.mixin.TestFor
-import spacedrepserver.CardDealerController
 import spock.lang.Specification
 
 /**
  * See the API for {@link grails.test.mixin.web.ControllerUnitTestMixin} for usage instructions
  */
-@TestFor(CardDealerController)
-class CardDealerControllerSpec extends Specification {
+@TestFor(SomethingController)
+class SomethingControllerSpec extends Specification {
 
     def setup() {
     }
