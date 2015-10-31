@@ -28,6 +28,7 @@ grails.project.dependency.resolution = {
     inherits("global") {
         // specify dependency exclusions here; for example, uncomment this to disable ehcache:
         // excludes 'ehcache'
+        excludes 'h2'
     }
     log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     checksums true // Whether to verify checksums on resolve
@@ -54,6 +55,9 @@ grails.project.dependency.resolution = {
         test "org.grails:grails-datastore-test-support:1.0.2-grails-2.4"
 
         compile 'org.json:json:20090211'
+
+        // using older version to be compatible with previous database
+        runtime 'com.h2database:h2:1.1.115'
     }
 
     plugins {
