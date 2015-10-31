@@ -1,6 +1,5 @@
 package spacedrepserver
 
-import flashcards.Deck
 import grails.transaction.Transactional
 
 @Transactional

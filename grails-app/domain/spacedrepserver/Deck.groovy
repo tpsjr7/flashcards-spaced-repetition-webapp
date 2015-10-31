@@ -1,4 +1,4 @@
-package flashcards
+package spacedrepserver
 
 class Deck {
 

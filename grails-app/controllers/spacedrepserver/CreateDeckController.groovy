@@ -1,6 +1,5 @@
 package spacedrepserver
 
-import flashcards.Deck
 import grails.converters.JSON
 
 class CreateDeckController {

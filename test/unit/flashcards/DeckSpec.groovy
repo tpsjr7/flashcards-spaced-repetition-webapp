@@ -1,6 +1,7 @@
 package flashcards
 
 import grails.test.mixin.TestFor
+import spacedrepserver.Deck
 import spock.lang.Specification
 
 /**

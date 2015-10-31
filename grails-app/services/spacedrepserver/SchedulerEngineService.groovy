@@ -1,13 +1,7 @@
 package spacedrepserver
 
-import flashcards.Card
-import flashcards.Deck
 import grails.transaction.Transactional
 import groovy.sql.Sql
-
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 @Transactional
 class SchedulerEngineService {
