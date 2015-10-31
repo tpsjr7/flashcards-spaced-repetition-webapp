@@ -5,6 +5,7 @@ grails.project.test.reports.dir = "target/test-reports"
 grails.project.work.dir = "target/work"
 grails.project.target.level = 1.6
 grails.project.source.level = 1.6
+grails.project.war.file = "webapps/ROOT.war"
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
 
 grails.project.fork = [
@@ -60,15 +61,15 @@ grails.project.dependency.resolution = {
         build ":tomcat:7.0.55.3" // or ":tomcat:8.0.22"
 
         // plugins for the compile step
-        compile ":scaffolding:2.1.2"
-        compile ':cache:1.1.8'
+//        compile ":scaffolding:2.1.2"
+//        compile ':cache:1.1.8'
         // asset-pipeline 2.0+ requires Java 7, use version 1.9.x with Java 6
-        compile ":asset-pipeline:2.2.3"
+//        compile ":asset-pipeline:2.2.3"
 
         // plugins needed at runtime but not for compilation
         runtime ":hibernate4:4.3.10" // or ":hibernate:3.6.10.18"
-        runtime ":database-migration:1.4.0"
-        runtime ":jquery:1.11.1"
+//        runtime ":database-migration:1.4.0"
+//        runtime ":jquery:1.11.1"
 
         // Uncomment these to enable additional asset-pipeline capabilities
         //compile ":sass-asset-pipeline:1.9.0"
