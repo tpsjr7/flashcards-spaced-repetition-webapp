@@ -30,8 +30,17 @@ environments {
     }
     production {
         dataSource {
-            dbCreate = "update"
-            url = "jdbc:h2:prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE"
+
+            String dir = System.getenv("OPENSHIFT_DATA_DIR") +  "db"
+            String dbPath
+            if(new File(dir).exists()){
+                dbPath = "${dir}/testdb";
+            } else {
+                throw new Exception("Could not find database under ${dir}")
+            }
+
+            dbCreate = "validate"
+            url = "jdbc:h2:${dbPath};MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE"
             properties {
                // See http://grails.org/doc/latest/guide/conf.html#dataSource for documentation
                jmxEnabled = true
