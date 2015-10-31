@@ -1,8 +1,13 @@
-package flashcards
+package spacedrepserver
 
-import grails.converters.JSON
+import flashcards.Card
+import flashcards.Deck
 import grails.transaction.Transactional
 import groovy.sql.Sql
+
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 @Transactional
 class SchedulerEngineService {
@@ -31,9 +36,10 @@ class SchedulerEngineService {
     }
 
     void addCards(Map json) {
+        def deck = Deck.load(json.deckId)
         for(def c in json.cards){
             new Card(
-                    deck: Deck.get(c.deckId),
+                    deck: deck,
                     foreignWritten: c.written,
                     pronunciation: c.pronunciation,
                     translation: c.translation,
@@ -107,16 +113,21 @@ class SchedulerEngineService {
         return cardTesting;
     }
 
-    CardCount countActiveCards(deck_id){
-        throw new RuntimeException("not implemented")
+    Map countActiveCards(Deck deck){
+        return [
+                activeCards: Card.countByDeckAndActive(deck, 1),
+                totalCards: Card.countByDeck(deck),
+                dueCards: Card.countByDeckAndTimedueLessThanAndActive(deck, System.currentTimeMillis(), 1)
+        ]
     }
 
-    void rescheduleCard(Deck deck, long timeShownBack, Card c, long responseTime, int answerVersion, int answer){
+    void rescheduleCard(int deck_id, long timeShownBack, int card_id, long responseTime, int answerVersion, int answer){
+        Deck deck = Deck.get(deck_id)
+        Card c = Card.get(card_id)
         //TODO: think through if the card has been made inactive and has just
         //been reactivated and shown, lastTimeTested should be set to 0
         //so how will diff be used?
         long actualInterval = timeShownBack - c.lastTimeShownBack;
-
 
         float oldEaseFactor = c.easeFactor;
         c.easeFactor = udpateEaseFactor(
@@ -185,7 +196,15 @@ class SchedulerEngineService {
         return answer == 2 || answer == 3;
     }
 
-    private float udpateEaseFactor(float oldFactor, int answerVersion, int answer, long responseTime, long lastActualInterval, long actualInterval, long lastTimeShownBack) {
+    private float udpateEaseFactor(
+            float oldFactor,
+            int answerVersion,
+            int answer,
+            long responseTime,
+            long lastActualInterval,
+            long actualInterval,
+            long lastTimeShownBack
+    ) {
 
 
         if (lastTimeShownBack == 0) {
@@ -246,7 +265,6 @@ class SchedulerEngineService {
     private Sql getSql(){
         if(!sql){
             sql = new Sql(dataSource: dataSource)
-            assert sql.isCacheStatements()
             assert sql.isCacheNamedQueries()
         }
         return sql
@@ -271,7 +289,7 @@ class SchedulerEngineService {
                     ) as t2
                     on t1.OVERDUE_FRACTION <  t2.OVERDUE_FRACTION
                     where t2.id is null limit 1
-                ) as cid,
+                ) as cid
                 from card
             ) as t1
             where t1.cid = id
@@ -304,7 +322,7 @@ class SchedulerEngineService {
             on t1.TIMEDUE > t2.TIMEDUE
             where  t2.id is NULL"""
 
-        def row = getSql().firstRow([deck.id, deck.id], sql)
+        def row = getSql().firstRow(sql, [deck.id, deck.id])
         return row ? Card.load(row.id) : null
     }
 

@@ -1,9 +1,8 @@
 package spacedrepserver
 
 import flashcards.Card
-import flashcards.SchedulerEngineService
+import flashcards.Deck
 import grails.converters.JSON
-import static SchedulerEngineService.CardCount
 
 class CardDealerController {
 
@@ -17,7 +16,7 @@ class CardDealerController {
 
 
         if(op == "addCards"){
-            schedulerEngineService.addCards(params.params as JSON)
+            schedulerEngineService.addCards(JSON.parse(params.params) as Map)
             render "OK"
             return;
         }
@@ -26,8 +25,9 @@ class CardDealerController {
 
             boolean learnMore = Boolean.parseBoolean(params.learn_more);
 
-            Card c = schedulerEngineService.nextCardOrPause(deck_id, learnMore)
-            SchedulerEngineService.CardCount cc = schedulerEngineService.countActiveCards(deck_id);
+            Deck deck = Deck.load(deck_id)
+            Card c = schedulerEngineService.nextCardOrPause(deck, learnMore)
+            Map cc = schedulerEngineService.countActiveCards(deck);
 
             def out = [
                     "serverTime": new Date().time,
@@ -36,9 +36,8 @@ class CardDealerController {
                     "dc": cc.dueCards
             ]
 
+            out.card_id = -1
             if(c){
-                out.card_id = -1
-            } else {
                 out.cardToShow = [
                         front: c.foreignWritten,
                         back: "${c.pronunciation} - ${c.translation}"
@@ -55,14 +54,15 @@ class CardDealerController {
                     fontsize: "20px",
             ]
             render out as JSON
+            return
         }
         if(op == "reschedulecard"){
             schedulerEngineService.rescheduleCard(
                     params.deck_id as int,
                     params.timeShownBack as long,
-                    params.card_id as long,
+                    params.card_id as int,
                     params.rt as long,
-                    params.answerVersion as int,
+                    (params.answerVersion ?: 0 ) as int,
                     params.a as int
             )
             render "OK"

@@ -9,7 +9,7 @@ class Card {
     Long timedue
     Long lastTimeShownBack
     byte active
-    Double easeFactor
+    Float easeFactor
     Long lastActualInterval
 
 

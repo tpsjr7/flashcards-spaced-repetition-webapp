@@ -3,7 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
  <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=2.0;">
   <script type="text/javascript" src="js/datelib.js"></script>
-  <script type="text/javascript" src="js/dojo-release-1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/dojo/1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
 <script type="text/javascript">
 /*
 {
@@ -67,7 +67,7 @@ function showNewCard(card){
 
 function loadDeckConfig(callback){
 	dojo.xhrGet({
-		url:"CardDealerServlet",
+		url:"cardDealer",
 		content:{op:"getconfig"},
 		load:function(data){
 			deckConfig=dojo.fromJson(data)
@@ -85,7 +85,7 @@ function addCards(/* json array */ cards, callback,errorcallback){
 		cards:cards
 	}
 	dojo.xhrPost({
-		url:"CardDealerServlet",
+		url:"cardDealer",
 		content:{op:"addCards", params: dojo.toJson(params)},
 		load:callback,
 		error:errorcallback
@@ -126,7 +126,7 @@ function nextCardOrPause(learnMore){
 	}
 
 	dojo.xhrGet({
-		url:"CardDealerServlet",
+		url:"cardDealer",
 		content:{op:"nextCardOrPause",deck_id:deckId, learn_more: dojo.byId('learn-more').checked || learnMore},
 		error:function(err){
 			alert('could not retrieve the next card')
@@ -215,7 +215,7 @@ function nextCardOrPause(learnMore){
 		dojo.byId('current-word-front').innerHTML = ""
 		dojo.byId('current-card').style.display="none"
 		dojo.xhrGet({
-			url:"CardDealerServlet",
+			url:"cardDealer",
 			content:{
 				op:"reschedulecard",
 				deck_id:deckId,	
