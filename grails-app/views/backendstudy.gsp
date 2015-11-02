@@ -127,7 +127,11 @@ function nextCardOrPause(learnMore){
 
 	dojo.xhrGet({
 		url:"cardDealer",
-		content:{op:"nextCardOrPause",deck_id:deckId, learn_more: dojo.byId('learn-more').checked || learnMore},
+		content:{
+            op:"nextCardOrPause",
+            deck_id:deckId,
+            learn_more: dojo.byId('learn-more').checked || learnMore
+        },
 		error:function(err){
 			alert('could not retrieve the next card')
 		},
@@ -246,14 +250,13 @@ Input words:<br/>
 <!-- <input type="button" value="Load Config" onclick="reloadConfig()"/> -->
 
 <label for="show-uncover-button">Uncover button</label>
-<input type="checkbox" checked="no" id="show-uncover-button" />
+<input type="checkbox" id="show-uncover-button" />
 
-<label for="learn-more">Learn  More</label>
+<label for="learn-more">Learn More</label>
 <input type="checkbox" checked="yes" id="learn-more" onchange="nextCardOrPause()"/>
 
-<!--
-<input type="button" value="One More" onclick="nextCardOrPause(true)" />
--->
+<input type="button" value="+1" onclick="nextCardOrPause(true)"/>
+
 <br/>
 Card due: <span id="card-due">none</span> Now:<span id="time-now"></span>
 <br/>
