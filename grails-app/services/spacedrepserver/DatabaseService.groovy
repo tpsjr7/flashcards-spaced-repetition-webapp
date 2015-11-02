@@ -9,8 +9,4 @@ class DatabaseService {
         Card.findAllByDeck(deck)*.delete()
         deck.delete()
     }
-
-    def createDeck(String name){
-        new Deck(name: name).save()
-    }
 }

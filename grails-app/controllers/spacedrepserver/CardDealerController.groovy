@@ -19,7 +19,7 @@ class CardDealerController {
             return;
         }
         if(op == "nextCardOrPause"){
-            int deck_id = params.deck_id as int
+            long deck_id = params.deck_id as long
 
             boolean learnMore = Boolean.parseBoolean(params.learn_more);
 
@@ -60,7 +60,7 @@ class CardDealerController {
                     params.timeShownBack as long,
                     params.card_id as int,
                     params.rt as long,
-                    (params.answerVersion ?: 0 ) as int,
+                    (params.av ?: 0 ) as int,
                     params.a as int
             )
             render "OK"

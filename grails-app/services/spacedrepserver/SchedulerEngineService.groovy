@@ -9,8 +9,8 @@ class SchedulerEngineService {
 
     public static final long     initialInterval              = 20 * 1000; // 10 seconds
     private static final long    alreadyKnownInitialInterval  = 12 * 60 * 60 * 1000; // 12 hours
-    private static final float   minimumEaseFactor            = 1.3f;
-    public static final float    defaultEaseFactor            = 2.3f;
+    private static final double   minimumEaseFactor            = 1.3f;
+    public static final double    defaultEaseFactor            = 2.3f;
     private static final int     instantInterval              = 3000;
     private static final int     hesitationInterval           = 9000;
     private static final long    minimumTimeBeforeAdjust      = 12 * 60 * 60 * 1000; // 12 hours
@@ -86,7 +86,7 @@ class SchedulerEngineService {
                 //there are inactive cards, pick a new card to activate and learn
                 activateCard.active = 1
                 activateCard.timedue = now
-                activateCard.save()
+                activateCard.save(flush: true)
                 cardTesting = activateCard;
             } else {
                 //all cards are already activated, so have the front end
@@ -100,7 +100,7 @@ class SchedulerEngineService {
         } else {
             //Show the card that is most overdue
             most_overdue.active = 1
-            most_overdue.save()
+            most_overdue.save(flush: true)
             cardTesting = most_overdue
         }
 
@@ -123,7 +123,7 @@ class SchedulerEngineService {
         //so how will diff be used?
         long actualInterval = timeShownBack - c.lastTimeShownBack;
 
-        float oldEaseFactor = c.easeFactor;
+        double oldEaseFactor = c.easeFactor;
         c.easeFactor = udpateEaseFactor(
                 c.easeFactor,
                 answerVersion,
@@ -176,7 +176,7 @@ class SchedulerEngineService {
 
         System.out.println(c.toString());
 
-        c.save()
+        c.save(flush: true)
     }
 
     private boolean isCorrect(int answerVersion, int answer) {
@@ -190,8 +190,8 @@ class SchedulerEngineService {
         return answer == 2 || answer == 3;
     }
 
-    private float udpateEaseFactor(
-            float oldFactor,
+    private double udpateEaseFactor(
+            double oldFactor,
             int answerVersion,
             int answer,
             long responseTime,
@@ -219,12 +219,12 @@ class SchedulerEngineService {
         //response time 0 to 3 seconds + .1
         //response time 3 to 8 seconds +0 ( no change)
         //more than 8 seconds serious difficulty -.15
-        float effectiveFactor = lastActualInterval == 0 ? oldFactor : (float) actualInterval / (float) lastActualInterval; //old decks may not have a lastActualInterval and will be 0, so just use the oldFactor
+        double effectiveFactor = lastActualInterval == 0 ? oldFactor : (double) actualInterval / (double) lastActualInterval; //old decks may not have a lastActualInterval and will be 0, so just use the oldFactor
 
         // Effective ease factor is the ease factor it would have been considering how much time it was over due.
         // If it was way past due and it was missed, then calculate the minimum of the old factor vs the effective factor minus correction
 
-        float newFactor;
+        double newFactor;
 
         if (answer == 0) { //wrong, had no clue
             // New factor should be at least minimumEaseFactor.
@@ -232,20 +232,20 @@ class SchedulerEngineService {
             // very large like 10. And so 10 - .8 would be very large so take the old factor instead.
             // But if it was reviewed when due, so that oldFactor == effectiveFactor then
             // it will take off 0.8.
-            newFactor = Math.max(Math.min(oldFactor, effectiveFactor - 0.8f), minimumEaseFactor);
+            newFactor = Math.max(Math.min(oldFactor, effectiveFactor - 0.8), minimumEaseFactor);
         } else if (answer == 1) {
             //wrong but familiar
-            newFactor = Math.max(Math.min(oldFactor, effectiveFactor - 0.4f), minimumEaseFactor);
+            newFactor = Math.max(Math.min(oldFactor, effectiveFactor - 0.4), minimumEaseFactor);
         } else if (answer == 2 || answer == 3) {
             //corect, adjust based on response time
             if (responseTime >= 0 && responseTime <= instantInterval) {
-                newFactor = oldFactor + 0.1f; // dont use effective factor here, what if it was x10?
+                newFactor = oldFactor + 0.1; // dont use effective factor here, what if it was x10?
             } else if (responseTime > instantInterval && responseTime <= hesitationInterval) {
                 // Didn't respond too fast or too slow, so the ease factor stays the same
                 newFactor = oldFactor; // dont use effective factor here, what if it was x10?
             } else if (responseTime > hesitationInterval) {
                 // Took too long to respond. Decrease ease factor a little but not less than the minimum.
-                newFactor = Math.max(Math.min(oldFactor, effectiveFactor - 0.15f), minimumEaseFactor);
+                newFactor = Math.max(Math.min(oldFactor, effectiveFactor - 0.15), minimumEaseFactor);
             } else {
                 throw new RuntimeException("invalid response time " + responseTime);
             }

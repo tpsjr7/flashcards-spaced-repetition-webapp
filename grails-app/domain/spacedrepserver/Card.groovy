@@ -9,7 +9,7 @@ class Card {
     Long timedue
     Long lastTimeShownBack
     byte active
-    Float easeFactor
+    Double easeFactor
     Long lastActualInterval
 
 
@@ -23,5 +23,10 @@ class Card {
     static belongsTo = [deck: Deck]
 
     static constraints = {
+        foreignWritten nullable: true
+        pronunciation nullable: true
+        translation nullable: true
+        lastTimeShownBack nullable: true
+        lastActualInterval nullable: true
     }
 }
