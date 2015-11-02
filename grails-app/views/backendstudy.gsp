@@ -96,6 +96,10 @@ function addCards(/* json array */ cards, callback,errorcallback){
 function setupForNextCard(nextCardDueDate){
 
     dojo.byId('card-due').innerHTML = nextCardDueDate == null ? "(none)" :  nextCardDueDate.toString("h:mm:ss")
+
+    if(!dojo.byId('learn-more').checked){
+        dojo.byId("activate-another").style.display = "block";
+    }
 }
 
 function showAnswer(){
@@ -105,6 +109,7 @@ function showAnswer(){
     dojo.byId('answer-div').style.display="block";
     dojo.byId('answer-span').innerHTML=currentCard.back;
 	dojo.byId('show-answer-button').style.display="none";
+    dojo.byId('add-another').style.display="none";
 }
 
 /**
@@ -143,13 +148,14 @@ function nextCardOrPause(learnMore){
 			dojo.byId('active-count').innerHTML = jo.ac;
 			dojo.byId('total-count').innerHTML = jo.tc;
 			dojo.byId("due-count").innerHTML = jo.dc;
-			if(card_id != -1){
+			if(card_id != -1){ // if there's a card to show or will be shown
 				var wait = jo.timeDue - jo.serverTime;
 
-				wait = wait > 0 ? wait : 0
+				wait = wait > 0 ? wait : 0 // turn negative values into 0
 				var nextCardDueDate = new Date(now+wait)
 				setupForNextCard(nextCardDueDate)
 				nextCardOrPause_timer=setTimeout(function(){
+                    dojo.byId("activate-another").style.display = "none";
 					if(dojo.byId('show-uncover-button').checked){
 						showNewCardButton(jo.cardToShow)
 					}else{
@@ -157,6 +163,7 @@ function nextCardOrPause(learnMore){
 					}
 				},wait );
 			}else{
+                // no card scheduled
 				setupForNextCard(null)
 			}
 		}
@@ -255,8 +262,6 @@ Input words:<br/>
 <label for="learn-more">Learn More</label>
 <input type="checkbox" checked="yes" id="learn-more" onchange="nextCardOrPause()"/>
 
-<input type="button" value="+1" onclick="nextCardOrPause(true)"/>
-
 <br/>
 Card due: <span id="card-due">none</span> Now:<span id="time-now"></span>
 <br/>
@@ -295,6 +300,11 @@ Response Time: <span id="response-time">N/A</span>
     </div>
     </div>
 </div>
+
+<div id="activate-another" style="display:none">
+    <input type="button" value="Activate Another" onclick="nextCardOrPause(true)"/>
+</div>
+
 </center>
   
 </body>
