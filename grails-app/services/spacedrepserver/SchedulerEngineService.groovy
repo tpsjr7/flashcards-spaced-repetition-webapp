@@ -72,7 +72,6 @@ class SchedulerEngineService {
         Card most_overdue = findMostOverdueCard(deck, delayNow)
         long now = System.currentTimeMillis()
         Card cardTesting = null;
-        log.debug("learnmore: " + learnMore)
         if (most_overdue == null) {
             //no overdue cards, so show new cards if available and the user is
             //learning new cards.
@@ -158,7 +157,11 @@ class SchedulerEngineService {
                     c.scheduledInterval = Math.max(c.scheduledInterval, alreadyKnownInitialInterval);
                 }
                 if (c.scheduledInterval == 0) {
-                    throw new RuntimeException("scheduledInterval was zero. ActualInterval: " + actualInterval + ", easeFactor: " + c.easeFactor + ", timeShownBack: " + timeShownBack + ", lastTimeShownBack: " + c.lastTimeShownBack);
+                    throw new RuntimeException(
+                            "scheduledInterval was zero. ActualInterval: " + actualInterval
+                                    + ", easeFactor: " + c.easeFactor
+                                    + ", timeShownBack: " + timeShownBack
+                                    + ", lastTimeShownBack: " + c.lastTimeShownBack);
                 }
                 c.lastActualInterval = actualInterval;
             }
