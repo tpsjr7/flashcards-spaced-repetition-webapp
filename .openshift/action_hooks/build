@@ -1,9 +1,14 @@
 #!/bin/bash
 set -x
+set -e
+
 cd $OPENSHIFT_REPO_DIR
 
 gw="${OPENSHIFT_DATA_DIR}/grailswork"
 export GRAILS_AGENT_CACHE_DIR="$gw/.grails/2.5.1/"
 
-export GRAILS_OPTS="-Duser.home=$gw/ -Xmx512m -XX:MaxPermSize=256m"
-./grailsw -Dgrails.work.dir=$gw/.grails -Duser.home=$gw/  war
+export GRAILS_OPTS="-Duser.home=$gw/ -Dgrails.work.dir=$gw/.grails -Xmx512m -XX:MaxPermSize=256m"
+
+./grailsw execute scripts/Migrate.groovy
+./grailsw war
+

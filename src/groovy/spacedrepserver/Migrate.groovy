@@ -10,7 +10,13 @@ class Migrate {
 
 
     Sql getSql(){
-        def dbPath = "/Users/tedsandersjr/Dropbox/spaced_rep_backup/thedb/db/testdb"
+        def envs = [
+                local: "/Users/tedsandersjr/Dropbox/spaced_rep_backup/thedb/db/testdb",
+                prod: System.getenv("OPENSHIFT_DATA_DIR") +  "db/testdb"
+        ]
+
+        def dbPath  = System.getenv("OPENSHIFT_DATA_DIR") == null ? envs.local : envs.prod
+
         def url = "jdbc:h2:${dbPath};MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE"
 
         def sql = Sql.newInstance(url, "sa", "sa")
