@@ -117,6 +117,10 @@ class SchedulerEngineService {
     void rescheduleCard(int deck_id, long timeShownBack, int card_id, long responseTime, int answerVersion, int answer){
         Deck deck = Deck.get(deck_id)
         Card c = Card.get(card_id)
+
+        c.lastTimeShownBack = c.lastTimeShownBack ?: 0
+        c.lastActualInterval = c.lastActualInterval ?: 0
+
         //TODO: think through if the card has been made inactive and has just
         //been reactivated and shown, lastTimeTested should be set to 0
         //so how will diff be used?
