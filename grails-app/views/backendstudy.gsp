@@ -18,15 +18,21 @@ tripletLoad : true
 
 */
 
-        var djConfig = {
-            parseOnLoad: false,
-            isDebug: false,
-            locale: 'en-us',
-            debugAtAllCosts: false
-        };
+    var djConfig = {
+        parseOnLoad: false,
+        isDebug: false,
+        locale: 'en-us',
+        debugAtAllCosts: false
+    };
+
+//    var Notification = window.Notification || window.mozNotification || window.webkitNotification;
+//
+//    Notification.requestPermission(function (permission) {
+//    // console.log(permission);
+//    });
 </script>
 
-<script type="text/javascript"  >
+<script type="text/javascript">
 
 var deckConfig;
 var deckId = ${params.deck_id};
@@ -51,8 +57,9 @@ function showNewCardButton(card){
     var b = dojo.byId('show-card-button')
     b.style.display="block"
     b.onclick = function(){showNewCard(card)}
-    if(deckConfig.alertOnCardDue){
-        alert('card due')
+    if(dojo.byId('show-alert').checked){
+          alert('card due');
+//        new Notification("Card is due");
     }
 }
 
@@ -122,9 +129,12 @@ function showAnswer(){
  * the argument learnMore is true ( when the One More button is pressed)
  * 
  * Shows the uncover button based if the "show-uncover-button" checkbox is checked.
+ *
+ * If suppress is true - don't show an alert and dont show the uncover button because we just clicked
+ * the activate new card button.
  */
 nextCardOrPause_timer=null
-function nextCardOrPause(learnMore){
+function nextCardOrPause(learnMore, suppress){
 	if(nextCardOrPause_timer!=null){
  		clearTimeout(nextCardOrPause_timer)
 		nextCardOrPause_timer = null;
@@ -156,7 +166,7 @@ function nextCardOrPause(learnMore){
 				setupForNextCard(nextCardDueDate)
 				nextCardOrPause_timer=setTimeout(function(){
                     dojo.byId("activate-another").style.display = "none";
-					if(dojo.byId('show-uncover-button').checked){
+					if(!suppress && dojo.byId('show-uncover-button').checked){
 						showNewCardButton(jo.cardToShow)
 					}else{
 						showNewCard(jo.cardToShow)
@@ -262,6 +272,9 @@ Input words:<br/>
 <label for="learn-more">Learn More</label>
 <input type="checkbox" checked="yes" id="learn-more" onchange="nextCardOrPause()"/>
 
+<label for="show-alert">Alert</label>
+<input type="checkbox" id="show-alert"/>
+
 <br/>
 Card due: <span id="card-due">none</span> Now:<span id="time-now"></span>
 <br/>
@@ -302,7 +315,7 @@ Response Time: <span id="response-time">N/A</span>
 </div>
 
 <div id="activate-another" style="display:none">
-    <input type="button" value="Activate Another" onclick="nextCardOrPause(true)"/>
+    <input type="button" value="Activate Another" onclick="nextCardOrPause(true, true)"/>
 </div>
 
 </center>
