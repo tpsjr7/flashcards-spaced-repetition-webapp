@@ -11,9 +11,9 @@ class SchedulerEngineService {
     private static final long    alreadyKnownInitialInterval  = 12 * 60 * 60 * 1000; // 12 hours
     private static final double   minimumEaseFactor            = 1.3f;
     public static final double    defaultEaseFactor            = 2.3f;
-    private static final int     instantInterval              = 3000;
+    private static final int     instantInterval              = 1600;
     private static final int     hesitationInterval           = 9000;
-    private static final long    minimumTimeBeforeAdjust      = 12 * 60 * 60 * 1000; // 12 hours
+    private static final long    minimumTimeBeforeAdjust      = 10 * 60 * 1000; // 10 minutes
     private static final double  actualIntervalWeight         = 0.5;
     private static final long    freetimeBeforeNewCard        = 0 * 1000; // minimum amount of time reqired before a card is due before allowing a new card to be learned
     //private static final long    actualIntervalSkipToDay      = 20 * 60 * 1000; // if the actual interval was at least 20 minutes, then make sure it gets rescheduled to at least a day
@@ -214,7 +214,7 @@ class SchedulerEngineService {
         }
 
         if (actualInterval < minimumTimeBeforeAdjust) {
-            //dont start adjusting the ease factor until the card is at least 5 minutes old.
+            //dont start adjusting the ease factor until the card is at least minimumTimeBeforeAdjust minutes old.
             System.out.println("less than " + minimumTimeBeforeAdjust + " keeping ease factor " + oldFactor);
             return oldFactor;
         }
