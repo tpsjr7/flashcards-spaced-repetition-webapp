@@ -1,9 +1,20 @@
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
- <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=2.0;">
-  <script type="text/javascript" src="js/datelib.js"></script>
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/dojo/1.5.0/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=2.0;">
+    <script type="text/javascript" src="js/datelib.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20150503/json2.min.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
 <script type="text/javascript">
 /*
 {
@@ -17,13 +28,6 @@ tripletLoad : true
 }
 
 */
-
-    var djConfig = {
-        parseOnLoad: false,
-        isDebug: false,
-        locale: 'en-us',
-        debugAtAllCosts: false
-    };
 
 //    var Notification = window.Notification || window.mozNotification || window.webkitNotification;
 //
@@ -42,48 +46,46 @@ var serverTimeOffset = 0 //how much the server time differs from this computer's
 var timeShownFront;
 var timeShownBack; //time when the user clicked show answer
 var responseTime; // time it takes for user to click show answer in milliseconds
-dojo.addOnLoad(function(){
+$(document).ready(function(){
 	loadDeckConfig(function(){
-		dojo.byId("current-word-front").style.fontSize=deckConfig.fontsize;
-		//dojo.byId('current-word-front').value = ""
+		$("#current-word-front")[0].style.fontSize=deckConfig.fontsize;
+		//$('#current-word-front').value = ""
 		setInterval(function(){
-			dojo.byId("time-now").innerHTML=new Date().toString("h:mm:ss")
+			$("#time-now").innerHTML=new Date().toString("h:mm:ss")
 		},1000)
 		nextCardOrPause();
 	});
-})
+});
 
 function showNewCardButton(card){
-    var b = dojo.byId('show-card-button')
+    var b = $('#show-card-button')[0];
     b.style.display="block"
     b.onclick = function(){showNewCard(card)}
-    if(dojo.byId('show-alert').checked){
+    if($('#show-alert').checked){
           alert('card due');
 //        new Notification("Card is due");
     }
 }
 
 function showNewCard(card){
-	dojo.byId('show-card-button').style.display="none";
-    dojo.byId('current-card').style.display="block"
-	dojo.byId('show-answer-button').style.display="inline";
-    dojo.byId('current-word-front').innerHTML = card.front
+	$('#show-card-button')[0].style.display="none";
+    $('#current-card')[0].style.display="block"
+	$('#show-answer-button')[0].style.display="inline";
+    $('#current-word-front')[0].innerHTML = card.front
     timeShownFront=new Date().getTime() + serverTimeOffset
     currentCard = card
 }
 
 function loadDeckConfig(callback){
-	dojo.xhrGet({
+	$.ajax({
 		url:"cardDealer",
-		content:{op:"getconfig"},
-		load:function(data){
-			deckConfig=dojo.fromJson(data)
-			callback();
-		},
-		error:function(err){
-			alert('unable to load deck config')
-		}
-	});
+		data:{op:"getconfig"}
+	}).done(function(data){
+        deckConfig=data;
+        callback();
+    }).fail(function(err){
+        alert('unable to load deck config')
+    });
 }
 
 function addCards(/* json array */ cards, callback,errorcallback){
@@ -91,32 +93,31 @@ function addCards(/* json array */ cards, callback,errorcallback){
 		deckId:deckId,
 		cards:cards
 	}
-	dojo.xhrPost({
+	$.ajax({
+        method: "POST",
 		url:"cardDealer",
-		content:{op:"addCards", params: dojo.toJson(params)},
-		load:callback,
-		error:errorcallback
-	});
+		data:{op:"addCards", params: stringify(params)}
+	}).done(callback).fail(errorcallback);
 	
 }
 
 function setupForNextCard(nextCardDueDate){
 
-    dojo.byId('card-due').innerHTML = nextCardDueDate == null ? "(none)" :  nextCardDueDate.toString("h:mm:ss")
+    $('#card-due')[0].innerHTML = nextCardDueDate == null ? "(none)" :  nextCardDueDate.toString("h:mm:ss")
 
-    if(!dojo.byId('learn-more').checked){
-        dojo.byId("activate-another").style.display = "block";
+    if(!$('#learn-more')[0].checked){
+        $("#activate-another")[0].style.display = "block";
     }
 }
 
 function showAnswer(){
 	timeShownBack = new Date().getTime() + serverTimeOffset
 	responseTime =  timeShownBack  - timeShownFront
-    dojo.byId("response-time").innerHTML = responseTime /1000;
-    dojo.byId('answer-div').style.display="block";
-    dojo.byId('answer-span').innerHTML=currentCard.back;
-	dojo.byId('show-answer-button').style.display="none";
-    dojo.byId('add-another').style.display="none";
+    $("#response-time")[0].innerHTML = responseTime /1000;
+    $('#answer-div')[0].style.display="block";
+    $('#answer-span')[0].innerHTML=currentCard.back;
+	$('#show-answer-button')[0].style.display="none";
+    $('#add-another').css('display',"none");
 }
 
 /**
@@ -140,44 +141,42 @@ function nextCardOrPause(learnMore, suppress){
 		nextCardOrPause_timer = null;
 	}
 
-	dojo.xhrGet({
+	$.ajax({
 		url:"cardDealer",
-		content:{
+		data:{
             op:"nextCardOrPause",
             deck_id:deckId,
-            learn_more: dojo.byId('learn-more').checked || learnMore
-        },
-		error:function(err){
-			alert('could not retrieve the next card')
-		},
-		load:function(data){
-			var jo = dojo.fromJson(data)
-			var now = new Date().getTime()
-			card_id = jo.card_id
-			serverTimeOffset = jo.serverTime - now;
-			dojo.byId('active-count').innerHTML = jo.ac;
-			dojo.byId('total-count').innerHTML = jo.tc;
-			dojo.byId("due-count").innerHTML = jo.dc;
-			if(card_id != -1){ // if there's a card to show or will be shown
-				var wait = jo.timeDue - jo.serverTime;
+            learn_more: $('#learn-more')[0].checked || learnMore
+        }
+    }).fail(function(err){
+        alert('could not retrieve the next card')
+    }).done(function(data){
+        var jo = data;
+        var now = new Date().getTime();
+        card_id = jo.card_id;
+        serverTimeOffset = jo.serverTime - now;
+        $('#active-count')[0].innerHTML = jo.ac;
+        $('#total-count')[0].innerHTML = jo.tc;
+        $("#due-count")[0].innerHTML = jo.dc;
+        if(card_id != -1){ // if there's a card to show or will be shown
+            var wait = jo.timeDue - jo.serverTime;
 
-				wait = wait > 0 ? wait : 0 // turn negative values into 0
-				var nextCardDueDate = new Date(now+wait)
-				setupForNextCard(nextCardDueDate)
-				nextCardOrPause_timer=setTimeout(function(){
-                    dojo.byId("activate-another").style.display = "none";
-					if(!suppress && dojo.byId('show-uncover-button').checked){
-						showNewCardButton(jo.cardToShow)
-					}else{
-						showNewCard(jo.cardToShow)
-					}
-				},wait );
-			}else{
-                // no card scheduled
-				setupForNextCard(null)
-			}
-		}
-	});
+            wait = wait > 0 ? wait : 0 // turn negative values into 0
+            var nextCardDueDate = new Date(now+wait);
+            setupForNextCard(nextCardDueDate);
+            nextCardOrPause_timer=setTimeout(function(){
+                $("#activate-another")[0].style.display = "none";
+                if(!suppress && $('#show-uncover-button')[0].checked){
+                    showNewCardButton(jo.cardToShow)
+                }else{
+                    showNewCard(jo.cardToShow)
+                }
+            },wait );
+        }else{
+            // no card scheduled
+            setupForNextCard(null)
+        }
+    });
 }
 
 
@@ -208,7 +207,7 @@ function nextCardOrPause(learnMore, suppress){
 
 	function parseInputWords() {
 		try {
-			var input = dojo.trim(dojo.byId("input-words").value)
+			var input = $.trim($("#input-words")[0].value)
 			if (input == "") {
 				return
 			}
@@ -217,11 +216,11 @@ function nextCardOrPause(learnMore, suppress){
 			var cards = tripletParse(lines)
 			addCards(cards,
 				function(data){
-					dojo.byId("input-words").value = "";
+					$("#input-words")[0].value = "";
 					nextCardOrPause();
 				},
 				function(err){
-					alert('failed to add cards '+dojo.toJson(c));
+					alert('failed to add cards ' + JSON.stringify(c));
 				}
 			);
 			
@@ -231,13 +230,13 @@ function nextCardOrPause(learnMore, suppress){
 	}
 
 	function rescheduleCurrentCard(iAnswer){
-		dojo.byId('answer-div').style.display="none"
-		dojo.byId('show-card-button').style.display="none"
-		dojo.byId('current-word-front').innerHTML = ""
-		dojo.byId('current-card').style.display="none"
-		dojo.xhrGet({
+		$('#answer-div')[0].style.display="none"
+		$('#show-card-button')[0].style.display="none"
+		$('#current-word-front')[0].innerHTML = ""
+		$('#current-card')[0].style.display="none"
+		$.ajax({
 			url:"cardDealer",
-			content:{
+			data:{
 				op:"reschedulecard",
 				deck_id:deckId,	
 				a:iAnswer,
@@ -245,15 +244,10 @@ function nextCardOrPause(learnMore, suppress){
 				timeShownBack:timeShownBack,
 				card_id:card_id,
 				rt: responseTime
-			},
-			load:function(data){
-				nextCardOrPause();
-			},
-			error:function(err){
-				alert('unable to reschedule: '+dojo.toJson(err))
 			}
-			
-		});
+		}).done(nextCardOrPause).fail(function( jqXHR, textStatus, errorThrown){
+            alert('unable to reschedule: '+ errorThrown);
+        })
 	}
 </script>
 
